@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos — Grupo Hannover</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cherry:#8B1A2B;--maroon:#5C0E1A;--cream:#F7F3EE;--gold:#C9A96E;
+  --dark:#1A0A0E;--bg:#FAF8F5;--white:#fff;--border:#E8E0D6;--text:#2C1010;
+  --muted:rgba(44,16,16,0.45);--fria-color:#1A4A7A;--seca-color:#B8600A;
+}
+body{font-family:"Montserrat",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+.topnav{background:var(--dark);border-bottom:1px solid rgba(201,169,110,0.15);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-brand{font-family:"Cormorant Garamond",serif;color:var(--cream);font-size:18px;letter-spacing:0.1em}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-unidade{font-size:11px;font-weight:600;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase}
+.nav-dash{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(201,169,110,0.7);background:none;border:1px solid rgba(201,169,110,0.3);border-radius:2px;cursor:pointer;padding:6px 12px;display:none}
+.nav-logout{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:rgba(247,243,238,0.4);background:none;border:none;cursor:pointer;padding:6px 10px}
+.nav-logout:hover{color:var(--cream)}
+
+/* LAYOUT */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:220px;min-width:220px;background:var(--white);border-right:1px solid var(--border);padding:16px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.sidebar-title{font-size:9px;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:rgba(44,16,16,0.35);padding:0 14px 8px}
+.cat-btn{display:block;width:100%;text-align:left;padding:8px 14px;background:none;border:none;cursor:pointer;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:500;color:rgba(44,16,16,0.6);border-left:2px solid transparent;transition:all 0.15s;position:relative}
+.cat-btn:hover{background:rgba(139,26,43,0.04);color:var(--cherry)}
+.cat-btn.active{background:rgba(139,26,43,0.06);color:var(--cherry);border-left-color:var(--cherry);font-weight:600}
+.cat-count{float:right;background:rgba(139,26,43,0.1);color:var(--cherry);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.route-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.route-fria{background:var(--fria-color)}
+.route-seca{background:var(--seca-color)}
+.sidebar-legend{padding:12px 14px;border-top:1px solid var(--border);margin-top:8px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);margin-bottom:4px}
+.main{flex:1;padding:20px 24px;max-width:900px}
+.page-title{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:500;color:var(--dark);margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+
+/* CONSUMO SECTION */
+.consumo-section{background:var(--white);border:1px solid var(--border);border-left:3px solid var(--fria-color);border-radius:2px;padding:16px 20px;margin-bottom:20px}
+.consumo-section-title{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--fria-color);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.consumo-fields{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
+.consumo-field label{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.consumo-field input[type=number]{border:1px solid var(--border);border-radius:2px;padding:9px 12px;font-family:"Montserrat",sans-serif;font-size:14px;color:var(--text);background:var(--bg);outline:none;width:140px}
+.consumo-field input:focus{border-color:var(--cherry)}
+.turno-group{display:flex;gap:6px}
+.turno-btn{padding:9px 20px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;border-radius:2px;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:var(--bg);color:var(--muted)}
+.turno-btn.active{background:var(--cherry);color:var(--cream);border-color:var(--cherry)}
+.catalog-locked{opacity:0.4;pointer-events:none;position:relative}
+.lock-hint{text-align:center;padding:20px;font-size:12px;color:var(--muted);background:rgba(247,243,238,0.8);border:1px dashed var(--border);border-radius:2px;margin-bottom:12px}
+
+/* ORDER META */
+.order-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;background:var(--white);border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:18px}
+.meta-field label{font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.meta-field input,.meta-field select{width:100%;border:1px solid var(--border);border-radius:2px;padding:8px 10px;font-family:"Montserrat",sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none}
+.meta-field input:focus,.meta-field select:focus{border-color:var(--cherry)}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap input{width:100%;border:1px solid var(--border);border-radius:2px;padding:10px 14px 10px 36px;font-family:"Montserrat",sans-serif;font-size:13px;background:var(--white);outline:none;color:var(--text)}
+.search-wrap input:focus{border-color:var(--cherry)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(44,16,16,0.3);font-size:13px}
+
+/* CATALOG */
+.cat-section{margin-bottom:6px}
+.cat-section-title{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);padding:10px 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.route-tag{font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 7px;border-radius:2px}
+.route-tag-fria{background:rgba(26,74,122,0.12);color:var(--fria-color)}
+.route-tag-seca{background:rgba(184,96,10,0.12);color:var(--seca-color)}
+.item-row{padding:9px 10px;border-radius:2px;border:1px solid transparent;transition:all 0.15s;margin-bottom:2px}
+.item-row:hover{background:rgba(139,26,43,0.03);border-color:rgba(139,26,43,0.1)}
+.item-row.has-qty{background:rgba(139,26,43,0.05);border-color:rgba(139,26,43,0.2)}
+.item-main-row{display:grid;grid-template-columns:1fr 80px 110px;gap:10px;align-items:center}
+.item-name{font-size:13px;font-weight:500;color:var(--text)}
+.item-cod{font-size:10px;color:rgba(44,16,16,0.4);margin-top:1px}
+.item-preco{font-size:12px;font-weight:600;color:rgba(44,16,16,0.45);text-align:right}
+.qty-wrap{display:flex;align-items:center;gap:3px;justify-content:flex-end}
+.qty-btn{width:26px;height:26px;border:1px solid var(--border);border-radius:2px;background:var(--white);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--cherry);font-weight:700;flex-shrink:0;transition:all 0.15s;line-height:1}
+.qty-btn:hover{background:var(--cherry);color:var(--white);border-color:var(--cherry)}
+.qty-input{width:44px;border:1px solid var(--border);border-radius:2px;text-align:center;padding:4px 2px;font-family:"Montserrat",sans-serif;font-size:13px;font-weight:600;color:var(--text);outline:none}
+.qty-input:focus{border-color:var(--cherry)}
+
+/* CONSUMO INLINE */
+.item-consumo{margin-top:8px;padding:8px 10px;background:rgba(26,74,122,0.04);border-radius:2px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.consumo-info{font-size:11px;color:var(--fria-color);font-weight:600}
+.consumo-stock-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.stock-inp{width:60px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;font-family:"Montserrat",sans-serif;font-size:12px;text-align:center;outline:none;background:var(--white)}
+.stock-inp:focus{border-color:var(--fria-color)}
+.consumo-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:2px;letter-spacing:0.05em}
+.badge-ok{background:rgba(45,122,79,0.12);color:#2D7A4F}
+.badge-excesso{background:rgba(184,96,10,0.12);color:#B8600A}
+.badge-insuf{background:rgba(139,26,43,0.12);color:var(--cherry)}
+.badge-none{background:rgba(44,16,16,0.06);color:var(--muted)}
+
+/* CART FOOTER */
+.cart-footer{position:fixed;bottom:0;left:0;right:0;background:var(--dark);border-top:1px solid rgba(201,169,110,0.2);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;z-index:200;transform:translateY(100%);transition:transform 0.3s ease}
+.cart-footer.visible{transform:translateY(0)}
+.cart-count{font-size:12px;color:var(--gold);font-weight:500}
+.cart-total{font-size:22px;font-family:"Cormorant Garamond",serif;color:var(--cream);margin-top:2px}
+.cart-split{font-size:11px;color:rgba(247,243,238,0.5);margin-top:2px}
+.cart-actions{display:flex;gap:10px}
+.btn-submit{background:var(--cherry);color:var(--cream);border:none;border-radius:2px;padding:13px 28px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.btn-submit:hover{background:var(--maroon)}
+.btn-clear{background:transparent;color:rgba(247,243,238,0.4);border:1px solid rgba(247,243,238,0.15);border-radius:2px;padding:13px 18px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer}
+.btn-clear:hover{color:var(--cream)}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,10,14,0.85);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--white);border-radius:4px;padding:36px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,0.4)}
+.modal-icon{font-size:36px;text-align:center;margin-bottom:14px}
+.modal-title{font-family:"Cormorant Garamond",serif;font-size:22px;text-align:center;color:var(--dark);margin-bottom:6px}
+.modal-sub{font-size:12px;color:rgba(44,16,16,0.5);text-align:center;margin-bottom:20px;line-height:1.6}
+.modal-section-title{font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;padding:8px 0 6px;margin-bottom:4px;border-bottom:1px solid var(--border)}
+.modal-section-title.fria{color:var(--fria-color)}
+.modal-section-title.seca{color:var(--seca-color)}
+.modal-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+.modal-table th{text-align:left;padding:7px 10px;background:var(--bg);font-weight:700;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted)}
+.modal-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.modal-table .total-row td{font-weight:700;color:var(--cherry);border-bottom:none;border-top:2px solid var(--border);padding-top:10px}
+.btn-download{width:100%;background:var(--cherry);color:var(--cream);border:none;border-radius:2px;padding:15px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;margin-bottom:10px;transition:background 0.2s}
+.btn-download:hover{background:var(--maroon)}
+.btn-novo{width:100%;background:transparent;color:rgba(44,16,16,0.5);border:1px solid var(--border);border-radius:2px;padding:11px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer}
+.btn-novo:hover{color:var(--text)}
+.modal-btn-row{display:flex;gap:10px;margin-top:8px}
+.modal-btn-row .btn-download,.modal-btn-row .btn-novo{margin-bottom:0}
+.btn-warn-full{width:100%;background:#B8600A;color:#fff;border:none;border-radius:2px;padding:14px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;margin-bottom:8px}
+.btn-warn-full:hover{background:#8B480A}
+.btn-cancel-full{width:100%;background:transparent;color:rgba(44,16,16,0.5);border:1px solid var(--border);border-radius:2px;padding:11px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(26,10,14,0.5);z-index:600;display:none;align-items:center;justify-content:center}
+.loading-overlay.show{display:flex}
+.spinner{width:36px;height:36px;border:2px solid rgba(247,243,238,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:48px 20px;color:rgba(44,16,16,0.35)}
+.empty-state-icon{font-size:32px;margin-bottom:10px}
+
+/* Garante que conteúdo não fica escondido sob o cart footer fixo */
+.main{padding-bottom:100px}
+
+@media(max-width:640px){
+  .sidebar{display:none}
+  .main{padding:14px 14px 100px}
+  .order-meta{grid-template-columns:1fr 1fr}
+  .item-main-row{grid-template-columns:1fr 100px}
+  .item-preco{display:none}
+  .consumo-fields{flex-direction:column;gap:12px}
+  .modal-box{padding:24px 20px;margin:12px;width:calc(100% - 24px)}
+  .cart-footer{padding:10px 16px}
+  .cart-total{font-size:18px}
+  .btn-submit{padding:11px 18px;font-size:10px}
+  .btn-clear{padding:11px 14px;font-size:10px}
+}
+
+@media(max-width:400px){
+  .order-meta{grid-template-columns:1fr}
+  .turno-btn{padding:9px 14px;font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="nav-brand">Hannover</span>
+  <div class="nav-right">
+    <span class="nav-unidade" id="navUnidade">—</span>
+    <button class="nav-dash" id="btnDash" onclick="window.location.href='dashboard.html'">Dashboard</button>
+    <button class="nav-logout" onclick="logout()">Sair</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">Categorias</div>
+    <div id="catList"></div>
+    <div class="sidebar-legend">
+      <div class="legend-item"><span class="route-dot route-fria"></span>Cadeia Fria → Matheus</div>
+      <div class="legend-item"><span class="route-dot route-seca"></span>Cadeia Seca → Miguel</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-title" id="pageTitle">Pedido de Insumos</div>
+    <div class="page-sub">Itens são roteados automaticamente: Cadeia Fria → Matheus · Cadeia Seca → Miguel</div>
+
+    <!-- CONSUMO SECTION (apenas fondue) -->
+    <div class="consumo-section" id="consumoSection" style="display:none">
+      <div class="consumo-section-title">
+        <span>&#128336;</span> Validação de Consumo por Pessoas
+      </div>
+      <div class="consumo-fields">
+        <div class="consumo-field">
+          <label>Turno</label>
+          <div class="turno-group">
+            <button class="turno-btn" id="btnAlmoco" onclick="setTurno('almoco')">Almoço</button>
+            <button class="turno-btn" id="btnJantar" onclick="setTurno('jantar')">Jantar</button>
+          </div>
+        </div>
+        <div class="consumo-field">
+          <label>Nº de pessoas previstas</label>
+          <input type="number" id="numeroPessoas" min="1" max="999" placeholder="0" oninput="onPessoasChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCK HINT (quando fondue e turno/pessoas nao preenchidos) -->
+    <div id="lockHint" style="display:none" class="lock-hint">
+      Preencha o turno e o número de pessoas para liberar o catálogo.
+    </div>
+
+    <!-- ORDER META -->
+    <div class="order-meta" id="orderMeta">
+      <div class="meta-field">
+        <label>Solicitante</label>
+        <input type="text" id="metaSolicitante" readonly>
+      </div>
+      <div class="meta-field">
+        <label>Data de Entrega</label>
+        <input type="date" id="metaDataEntrega">
+      </div>
+      <div class="meta-field">
+        <label>Observação</label>
+        <input type="text" id="metaObs" placeholder="Opcional">
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap" id="searchWrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" id="searchInput" placeholder="Buscar item por nome ou código..." oninput="renderItems()">
+    </div>
+
+    <div id="itemsList"></div>
+  </main>
+</div>
+
+<!-- CART FOOTER -->
+<div class="cart-footer" id="cartFooter">
+  <div>
+    <div class="cart-count" id="cartCount">0 itens</div>
+    <div class="cart-total" id="cartTotal">R$ 0,00</div>
+    <div class="cart-split" id="cartSplit"></div>
+  </div>
+  <div class="cart-actions">
+    <button class="btn-clear" onclick="clearCart()">Limpar</button>
+    <button class="btn-submit" onclick="submitPedido()">Enviar Pedido →</button>
+  </div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div class="modal-overlay" id="modalSuccess">
+  <div class="modal-box">
+    <div class="modal-icon">&#9989;</div>
+    <div class="modal-title">Pedido Enviado!</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div id="modalFriaSection" style="display:none">
+      <div class="modal-section-title fria">&#10052; Cadeia Fria → Matheus</div>
+      <table class="modal-table">
+        <thead><tr><th>Produto</th><th>Qtd</th><th style="text-align:right">Valor</th></tr></thead>
+        <tbody id="modalBodyFria"></tbody>
+        <tfoot><tr class="total-row"><td colspan="2">Subtotal Fria</td><td id="modalTotalFria" style="text-align:right"></td></tr></tfoot>
+      </table>
+    </div>
+    <div id="modalSecaSection" style="display:none">
+      <div class="modal-section-title seca">&#128230; Cadeia Seca → Miguel</div>
+      <table class="modal-table">
+        <thead><tr><th>Produto</th><th>Qtd</th><th style="text-align:right">Valor</th></tr></thead>
+        <tbody id="modalBodySeca"></tbody>
+        <tfoot><tr class="total-row"><td colspan="2">Subtotal Seca</td><td id="modalTotalSeca" style="text-align:right"></td></tr></tfoot>
+      </table>
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-download" style="flex:1" onclick="downloadResumo()">&#11015; Baixar Resumo</button>
+      <button class="btn-novo" style="flex:1" onclick="novoPedido()">Novo Pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR INSUFICIENTE -->
+<div class="modal-overlay" id="modalInsuf">
+  <div class="modal-box">
+    <div class="modal-icon">&#9888;&#65039;</div>
+    <div class="modal-title">Itens Insuficientes</div>
+    <div class="modal-sub" id="modalInsufMsg"></div>
+    <button class="btn-warn-full" onclick="confirmarSubmit()">Enviar mesmo assim</button>
+    <button class="btn-cancel-full" onclick="document.getElementById('modalInsuf').classList.remove('show')">Revisar pedido</button>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────
+// Substitua pelos valores do seu projeto Supabase
+var SUPABASE_URL = 'https://qijwlgophinmscgtdpmb.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpandsZ29waGlubXNjZ3RkcG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE2NTMsImV4cCI6MjA5MTE2NzY1M30.HKrppltvS12zFglwtdNsbtBtUsui4jvBXvBJs6o82WM';
+
+// Helper Supabase REST
+function sbFetch(path, opts) {
+  return fetch(SUPABASE_URL + '/rest/v1' + path, Object.assign({
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  }, opts));
+}
+
+var CATALOGO_DATA = {"aletas": [{"codigo": "M001", "categoria": "Molhos Fondue Carne", "produto": "MOLHO BLUE CHEESE", "unidade": "bag", "preco": 18.66}, {"codigo": "M002", "categoria": "Molhos Fondue Carne", "produto": "MOLHO GELEIA DE DAMASCO", "unidade": "bag", "preco": 41.0}, {"codigo": "M003", "categoria": "Molhos Fondue Carne", "produto": "MOLHO ROSÉ", "unidade": "bag", "preco": 18.04}, {"codigo": "M004", "categoria": "Molhos Fondue Carne", "produto": "MOLHO RANCH", "unidade": "bag", "preco": 13.62}, {"codigo": "M005", "categoria": "Molhos Fondue Carne", "produto": "MOLHO PASTA DE ALHO", "unidade": "bag", "preco": 13.78}, {"codigo": "M006", "categoria": "Molhos Fondue Carne", "produto": "MOLHO PASTA DE AZEITONA", "unidade": "bag", "preco": 20.0}, {"codigo": "M007", "categoria": "Molhos Fondue Carne", "produto": "MOLHO GOIABADA CHILLI", "unidade": "bag", "preco": 5.65}, {"codigo": "M008", "categoria": "Molhos Fondue Carne", "produto": "MOLHO ORIENTAL", "unidade": "bag", "preco": 10.5}, {"codigo": "B001", "categoria": "Manteigas Aromáticas", "produto": "MANTEIGA COUVERT", "unidade": "bag", "preco": 38.1}, {"codigo": "B002", "categoria": "Manteigas Aromáticas", "produto": "MANTEIGA COM ALHO ASSADO", "unidade": "bag", "preco": 56.27}, {"codigo": "C001", "categoria": "Confeitaria", "produto": "BOLO DE BANANA", "unidade": "bag", "preco": 25.47}, {"codigo": "C002", "categoria": "Confeitaria", "produto": "BROWNIE", "unidade": "bag", "preco": 34.77}, {"codigo": "A001", "categoria": "Antepastos/Consomê", "produto": "GELEIA DE MORANGO", "unidade": "bag", "preco": 52.0}, {"codigo": "A002", "categoria": "Antepastos/Consomê", "produto": "SARDELA", "unidade": "bag", "preco": 20.1}, {"codigo": "A003", "categoria": "Antepastos/Consomê", "produto": "PESTO", "unidade": "bag", "preco": 68.0}, {"codigo": "F001", "categoria": "Fondues", "produto": "FONDUE QUEIJO SUAVE TRADICIONAL", "unidade": "bag", "preco": 24.0}, {"codigo": "F002", "categoria": "Fondues", "produto": "FONDUE QUEIJO CLÁSSICO DOS ALPES", "unidade": "bag", "preco": 26.03}, {"codigo": "F003", "categoria": "Fondues", "produto": "FONDUE CHOCOLATE AO LEITE", "unidade": "bag", "preco": 45.67}, {"codigo": "F004", "categoria": "Fondues", "produto": "FONDUE DE LEITE NINHO", "unidade": "bag", "preco": 26.55}, {"codigo": "F005", "categoria": "Fondues", "produto": "FONDUE DE DOCE DE LEITE", "unidade": "bag", "preco": 20.6}, {"codigo": "F006", "categoria": "Fondues", "produto": "FONDUE DE MILKA", "unidade": "bag", "preco": 84.0}, {"codigo": "F007", "categoria": "Fondues", "produto": "FONDUE DE NUTELLA", "unidade": "bag", "preco": 51.4}, {"codigo": "F008", "categoria": "Fondues", "produto": "FONDUE DE FERRERO ROCHER", "unidade": "bag", "preco": 52.5}, {"codigo": "F009", "categoria": "Fondues", "produto": "FONDUE CHOCOLATE CALLEBAUT", "unidade": "bag", "preco": 82.72}, {"codigo": "F010", "categoria": "Fondues", "produto": "FONDUE DE BISCOFF", "unidade": "bag", "preco": 20.0}, {"codigo": "F011", "categoria": "Fondues", "produto": "FONDUE DE LINDT", "unidade": "bag", "preco": 111.2}, {"codigo": "F012", "categoria": "Fondues", "produto": "CONSOMÊ DE VINHO", "unidade": "bag", "preco": 14.3}, {"codigo": "Q001", "categoria": "Queijos", "produto": "GORGONZOLA", "unidade": "peça", "preco": 55.0}, {"codigo": "Q002", "categoria": "Queijos", "produto": "PARMESÃO RALADO", "unidade": "peça", "preco": 46.0}, {"codigo": "CM001", "categoria": "Congelados Manipulados", "produto": "ALCATRA 1953", "unidade": "kg", "preco": 62.9}, {"codigo": "CM002", "categoria": "Congelados Manipulados", "produto": "PICANHA", "unidade": "kg", "preco": 88.4}, {"codigo": "CM003", "categoria": "Congelados Manipulados", "produto": "FILÉ MIGNON", "unidade": "kg", "preco": 107.0}, {"codigo": "CM004", "categoria": "Congelados Manipulados", "produto": "PEITO DE FRANGO", "unidade": "bag", "preco": 21.0}, {"codigo": "CI001", "categoria": "Congelados Industrializados", "produto": "BAGUETTE ITALIANA CONGELADA", "unidade": "Und", "preco": 27.0}, {"codigo": "CI002", "categoria": "Congelados Industrializados", "produto": "WAFFLE", "unidade": "kg", "preco": 18.0}, {"codigo": "CI003", "categoria": "Congelados Industrializados", "produto": "CHICKEN SUPREME", "unidade": "Pct", "preco": 23.16}, {"codigo": "CI008", "categoria": "Congelados Industrializados", "produto": "SOURDOUGH", "unidade": "Und", "preco": 40.0}, {"codigo": "CI009", "categoria": "Congelados Industrializados", "produto": "MINI ROLL", "unidade": "Pct", "preco": 29.56}, {"codigo": "CI010", "categoria": "Congelados Industrializados", "produto": "MINI PÃO DE QUEIJO BOLINHA", "unidade": "Pct", "preco": 19.0}, {"codigo": "CI011", "categoria": "Congelados Industrializados", "produto": "BATATA PALITO", "unidade": "Pct", "preco": 16.9}, {"codigo": "RI001", "categoria": "Refrigerados Industrializados", "produto": "LINGUICINHA COCKTAIL", "unidade": "bag", "preco": 45.0}, {"codigo": "RI002", "categoria": "Refrigerados Industrializados", "produto": "SALSICHA VIENA APERITIVO", "unidade": "bag", "preco": 42.0}, {"codigo": "RI003", "categoria": "Refrigerados Industrializados", "produto": "OVOS DE CODORNA", "unidade": "bag", "preco": 27.0}, {"codigo": "AL001", "categoria": "Alimentação Colaboradores", "produto": "COXA E SOBRECOXA", "unidade": "KG", "preco": null}, {"codigo": "AL002", "categoria": "Alimentação Colaboradores", "produto": "ACEM ", "unidade": "KG", "preco": null}, {"codigo": "AL003", "categoria": "Alimentação Colaboradores", "produto": "SASSAMI ", "unidade": "KG", "preco": null}, {"codigo": "AL004", "categoria": "Alimentação Colaboradores", "produto": "LINGUIÇA ", "unidade": "KG", "preco": null}, {"codigo": "CE001", "categoria": "CEASA", "produto": "Banana Prata", "unidade": "kg", "preco": 8.64}, {"codigo": "CE002", "categoria": "CEASA", "produto": "Limão Taiti", "unidade": "kg", "preco": 4.03}, {"codigo": "CE003", "categoria": "CEASA", "produto": "Abacaxi", "unidade": "kg", "preco": 5.93}, {"codigo": "CE004", "categoria": "CEASA", "produto": "Maracujá", "unidade": "kg", "preco": 15.6}, {"codigo": "CE005", "categoria": "CEASA", "produto": "Abobrinha", "unidade": "kg", "preco": 6.4}, {"codigo": "CE006", "categoria": "CEASA", "produto": "Batata Lavada", "unidade": "kg", "preco": 5.18}, {"codigo": "CE007", "categoria": "CEASA", "produto": "Cenoura", "unidade": "kg", "preco": 2.88}, {"codigo": "CE008", "categoria": "CEASA", "produto": "Beterraba", "unidade": "kg", "preco": 2.16}, {"codigo": "CE009", "categoria": "CEASA", "produto": "Hortelã", "unidade": "kg", "preco": 14.4}, {"codigo": "CE010", "categoria": "CEASA", "produto": "Laranja Pêra", "unidade": "kg", "preco": 3.74}, {"codigo": "CE011", "categoria": "CEASA", "produto": "Tomate Carmem", "unidade": "kg", "preco": 10.4}, {"codigo": "CE012", "categoria": "CEASA", "produto": "Repolho", "unidade": "kg", "preco": 2.16}, {"codigo": "CE013", "categoria": "CEASA", "produto": "Morango", "unidade": "kg", "preco": 30.86}, {"codigo": "CE014", "categoria": "CEASA", "produto": "Salsinha", "unidade": "kg", "preco": 10.8}, {"codigo": "CE015", "categoria": "CEASA", "produto": "Uva Thompson Verde", "unidade": "kg", "preco": 21.33}, {"codigo": "CE016", "categoria": "CEASA", "produto": "Colorau", "unidade": "kg", "preco": 20.6}, {"codigo": "CE017", "categoria": "CEASA", "produto": "Batata Bolinha", "unidade": "kg", "preco": 7.49}, {"codigo": "CE018", "categoria": "CEASA", "produto": "Cebola Roxa", "unidade": "kg", "preco": 7.76}, {"codigo": "CE019", "categoria": "CEASA", "produto": "Pimenta do Reino", "unidade": "kg", "preco": 48.3}, {"codigo": "CE020", "categoria": "CEASA", "produto": "Orégano", "unidade": "kg", "preco": 39.0}, {"codigo": "CE021", "categoria": "CEASA", "produto": "Ovos Extra", "unidade": "kg", "preco": 20.16}, {"codigo": "CE022", "categoria": "CEASA", "produto": "Tangerina", "unidade": "kg", "preco": 18.72}, {"codigo": "CE023", "categoria": "CEASA", "produto": "Gengibre", "unidade": "kg", "preco": 9.6}, {"codigo": "CE024", "categoria": "CEASA", "produto": "Brócolis Americano", "unidade": "kg", "preco": 9.22}, {"codigo": "CE025", "categoria": "CEASA", "produto": "Pitaya", "unidade": "kg", "preco": 43.71}, {"codigo": "CE026", "categoria": "CEASA", "produto": "Limão Siciliano", "unidade": "kg", "preco": 11.04}, {"codigo": "CE027", "categoria": "CEASA", "produto": "Cebolinha", "unidade": "kg", "preco": 10.08}, {"codigo": "CE028", "categoria": "CEASA", "produto": "Cebola Branca", "unidade": "kg", "preco": 3.69}, {"codigo": "CE029", "categoria": "CEASA", "produto": "Maçã Vermelha Fuji", "unidade": "kg", "preco": 15.2}, {"codigo": "CE030", "categoria": "CEASA", "produto": "Tomilho", "unidade": "kg", "preco": 60.0}, {"codigo": "CE031", "categoria": "CEASA", "produto": "Alho Descascado", "unidade": "kg", "preco": 28.8}, {"codigo": "CE032", "categoria": "CEASA", "produto": "Manjericão", "unidade": "kg", "preco": 57.6}, {"codigo": "CE033", "categoria": "CEASA", "produto": "Alecrim", "unidade": "kg", "preco": 28.8}, {"codigo": "CE034", "categoria": "CEASA", "produto": "Frutas Vermelhas Congeladas", "unidade": "kg", "preco": 45.47}, {"codigo": "CE035", "categoria": "CEASA", "produto": "Tomate Italianinho Vermelho", "unidade": "kg", "preco": 11.52}, {"codigo": "CE036", "categoria": "CEASA", "produto": "Sálvia", "unidade": "kg", "preco": 36.0}, {"codigo": "CE037", "categoria": "CEASA", "produto": "Folha de Louro", "unidade": "kg", "preco": 72.0}, {"codigo": "CE038", "categoria": "CEASA", "produto": "Kiwi", "unidade": "kg", "preco": 27.2}, {"codigo": "CE039", "categoria": "CEASA", "produto": "Tomate Grape Amarelo", "unidade": "kg", "preco": 17.28}, {"codigo": "CE040", "categoria": "CEASA", "produto": "Coentro", "unidade": "kg", "preco": 20.57}, {"codigo": "CE041", "categoria": "CEASA", "produto": "Pepino Comum", "unidade": "kg", "preco": 3.2}, {"codigo": "SD001", "categoria": "SECOS E DURADOUROS", "produto": "AZEITE EXTRA VIRGEM (CONVIDADOS)", "unidade": "UNIDADE 5L", "preco": 63.6}, {"codigo": "SD002", "categoria": "SECOS E DURADOUROS", "produto": "AZEITE TRUFADO", "unidade": "UNIDADE", "preco": 452.0}, {"codigo": "SD003", "categoria": "SECOS E DURADOUROS", "produto": "AZEITONA PRETA FATIADA", "unidade": "BALDE", "preco": 35.5}, {"codigo": "SD004", "categoria": "SECOS E DURADOUROS", "produto": "GOIABADA CASCÃO PREDILECTA", "unidade": "BARRA 7KG", "preco": 11.08}, {"codigo": "SD005", "categoria": "SECOS E DURADOUROS", "produto": "LEITE INTEGRAL", "unidade": "LITRO", "preco": 4.79}, {"codigo": "SD006", "categoria": "SECOS E DURADOUROS", "produto": "LEITE EM PÓ INTEGRAL (NINHO 575G)", "unidade": "UNIDADE", "preco": 47.57}, {"codigo": "SD007", "categoria": "SECOS E DURADOUROS", "produto": "MAIONESE", "unidade": "BALDE 3KG", "preco": 7.82}, {"codigo": "SD008", "categoria": "SECOS E DURADOUROS", "produto": "MARGARINA SEM SAL", "unidade": "BALDE 15KG", "preco": 5.33}, {"codigo": "SD009", "categoria": "SECOS E DURADOUROS", "produto": "MISTURA LÁCTEA LIMONADA SUÍÇA", "unidade": "UNIDADE", "preco": null}, {"codigo": "SD010", "categoria": "SECOS E DURADOUROS", "produto": "ÓLEO DE ALGODÃO", "unidade": "BALDE 14,5KG", "preco": 11.79}, {"codigo": "SD011", "categoria": "SECOS E DURADOUROS", "produto": "ÓLEO DE GIRASSOL 900ML", "unidade": "UNIDADE", "preco": 14.91}, {"codigo": "SD012", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ AÇÚCAR UNIÃO", "unidade": "CAIXA", "preco": null}, {"codigo": "SD013", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ ADOÇANTE", "unidade": "CAIXA", "preco": null}, {"codigo": "SD014", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ SAL LEBRE", "unidade": "CAIXA", "preco": null}, {"codigo": "SD015", "categoria": "SECOS E DURADOUROS", "produto": "SAL GROSSO", "unidade": "KG", "preco": 3.4}, {"codigo": "SD016", "categoria": "SECOS E DURADOUROS", "produto": "TABASCO VIDRO CONVIDADOS", "unidade": "UNIDADE", "preco": null}, {"codigo": "SD017", "categoria": "SECOS E DURADOUROS", "produto": "GRANULADO DE CHOCOLATE", "unidade": "PACOTE", "preco": 22.58}, {"codigo": "SD018", "categoria": "SECOS E DURADOUROS", "produto": "BIJU CROCANTE CANUDO", "unidade": "CAIXA 350", "preco": 0.71}, {"codigo": "SD019", "categoria": "SECOS E DURADOUROS", "produto": "NUTELLA", "unidade": "BALDE 3KG", "preco": 59.0}, {"codigo": "SD020", "categoria": "SECOS E DURADOUROS", "produto": "FERRERO ROCHER", "unidade": "PACOTE 3UN", "preco": 8.29}, {"codigo": "SD021", "categoria": "SECOS E DURADOUROS", "produto": "MARSHMALLOW BRANCO", "unidade": "CAIXA", "preco": 21.16}, {"codigo": "SD022", "categoria": "SECOS E DURADOUROS", "produto": "FAROFA LIMÃO SICILIANO", "unidade": "PACOTE", "preco": 30.0}, {"codigo": "D000", "categoria": "DESCARTAVEIS", "produto": "ÁLCOOL GEL (BARRICA)", "unidade": "UNIDADE", "preco": null}, {"codigo": "D001", "categoria": "DESCARTAVEIS", "produto": "BATERIA CR2032", "unidade": "UNIDADE", "preco": null}, {"codigo": "D002", "categoria": "DESCARTAVEIS", "produto": "CANUDO SHAK BIODEGRADÁVEL", "unidade": "PAC 500UN", "preco": null}, {"codigo": "D003", "categoria": "DESCARTAVEIS", "produto": "CANUDO CAIPIRINHA BIODEGRADÁVEL", "unidade": "PAC 100UN", "preco": null}, {"codigo": "D004", "categoria": "DESCARTAVEIS", "produto": "MEXEDOR DE CAFÉ", "unidade": "PAC 240", "preco": null}, {"codigo": "D005", "categoria": "DESCARTAVEIS", "produto": "SACOLA KRAFT CONVIDADOS", "unidade": "UNIDADE", "preco": null}, {"codigo": "D006", "categoria": "DESCARTAVEIS", "produto": "GUARDANAPO PANO VERMELHO 40X40", "unidade": "UNIDADE", "preco": null}, {"codigo": "D007", "categoria": "DESCARTAVEIS", "produto": "AUTO SECANTE LAVA LOUÇAS B21S", "unidade": "5L", "preco": null}, {"codigo": "D008", "categoria": "DESCARTAVEIS", "produto": "LIMPADOR MULTENSOATIVO", "unidade": "5L", "preco": null}, {"codigo": "D009", "categoria": "DESCARTAVEIS", "produto": "BUCHA DUPLA FACE MULTIUSO", "unidade": "UNIDADE", "preco": null}, {"codigo": "D010", "categoria": "DESCARTAVEIS", "produto": "FIBRAÇO", "unidade": "UNIDADE", "preco": null}, {"codigo": "D011", "categoria": "DESCARTAVEIS", "produto": "ÁLCOOL LÍQUIDO 70%", "unidade": "LITRO", "preco": null}, {"codigo": "D012", "categoria": "DESCARTAVEIS", "produto": "DETERGENTE LAVA LOUÇAS F4", "unidade": "UNIDADE", "preco": null}, {"codigo": "D013", "categoria": "DESCARTAVEIS", "produto": "ENZIMA LIMPA CAIXA DE GORDURA", "unidade": "KG", "preco": null}, {"codigo": "D014", "categoria": "DESCARTAVEIS", "produto": "GUARDANAPO ENSACADO 40X40", "unidade": "CAIXA", "preco": null}, {"codigo": "D015", "categoria": "DESCARTAVEIS", "produto": "GUARDANAPO PAPEL 30X30", "unidade": "CAIXA", "preco": null}, {"codigo": "BG001", "categoria": "BEBIDAS GERAIS", "produto": "Água sem gás Diamond", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG002", "categoria": "BEBIDAS GERAIS", "produto": "Água com gás Diamond", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG003", "categoria": "BEBIDAS GERAIS", "produto": "Red Bull 250ml", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG004", "categoria": "BEBIDAS GERAIS", "produto": "H2O Limoneto 500ml", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG005", "categoria": "BEBIDAS GERAIS", "produto": "Coca Cola Lata 350ml", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG006", "categoria": "BEBIDAS GERAIS", "produto": "Coca Cola Zero Lata 350ml", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG007", "categoria": "BEBIDAS GERAIS", "produto": "Guaraná Antarctica Lata 350ml", "unidade": "PCT 18UN", "preco": null}, {"codigo": "BG008", "categoria": "BEBIDAS GERAIS", "produto": "Guaraná Antarctica Zero Lata 350ml", "unidade": "PCT 12UN", "preco": null}, {"codigo": "BG009", "categoria": "BEBIDAS GERAIS", "produto": "Schweppes Citrus Lata 350ml", "unidade": "PCT 6UN", "preco": null}, {"codigo": "BG010", "categoria": "BEBIDAS GERAIS", "produto": "Tônica Antarctica Lata 350ml", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG011", "categoria": "BEBIDAS GERAIS", "produto": "Suco Uva Tinto Integral Catafesta 1,5L", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG012", "categoria": "BEBIDAS GERAIS", "produto": "Suco Uva Branco Integral Catafesta 1,5L", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG014", "categoria": "BEBIDAS GERAIS", "produto": "Café NESPRESSO", "unidade": "CX 50UN", "preco": 1.0}, {"codigo": "BG015", "categoria": "BEBIDAS GERAIS", "produto": "Jack Daniel's", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG016", "categoria": "BEBIDAS GERAIS", "produto": "Red Label 8 Anos", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG017", "categoria": "BEBIDAS GERAIS", "produto": "Black Label 12 Anos", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG018", "categoria": "BEBIDAS GERAIS", "produto": "Vodka Absolut", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG019", "categoria": "BEBIDAS GERAIS", "produto": "Vodka Smirnoff 1L", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG020", "categoria": "BEBIDAS GERAIS", "produto": "Saquê Azuma Kirin Soft", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG021", "categoria": "BEBIDAS GERAIS", "produto": "Cachaça São Francisco", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG022", "categoria": "BEBIDAS GERAIS", "produto": "Tequila Prata", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG023", "categoria": "BEBIDAS GERAIS", "produto": "Amarula", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG024", "categoria": "BEBIDAS GERAIS", "produto": "Porto Messias", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG025", "categoria": "BEBIDAS GERAIS", "produto": "Licor de Laranja Stok Curaçau", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG026", "categoria": "BEBIDAS GERAIS", "produto": "Espumante Chuva de Prata Branco", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG027", "categoria": "BEBIDAS GERAIS", "produto": "Aperol", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG028", "categoria": "BEBIDAS GERAIS", "produto": "Gin Seagers", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG029", "categoria": "BEBIDAS GERAIS", "produto": "Xarope de Gengibre", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG030", "categoria": "BEBIDAS GERAIS", "produto": "Angostura Bitter", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG031", "categoria": "BEBIDAS GERAIS", "produto": "Espuma de Gengibre", "unidade": "UNIDADE", "preco": null}, {"codigo": "BG032", "categoria": "BEBIDAS GERAIS", "produto": "Rum Bacardi Branco", "unidade": "GARRAFA", "preco": null}, {"codigo": "BG033", "categoria": "BEBIDAS GERAIS", "produto": "Vinho Tinto Suave Catafesta", "unidade": "GARRAFA", "preco": null}, {"codigo": "UE001", "categoria": "BAR", "produto": "Bailarina Sangria/Clericot 32cm", "unidade": "UN", "preco": null}, {"codigo": "UE002", "categoria": "BAR", "produto": "Caneca Moscow Mule 500ml", "unidade": "UN", "preco": null}, {"codigo": "UE003", "categoria": "BAR", "produto": "Copo Paulaner Cerveja Especial", "unidade": "UN", "preco": null}, {"codigo": "UE004", "categoria": "BAR", "produto": "Copo Caipirinha 260ml", "unidade": "UN", "preco": null}, {"codigo": "UE005", "categoria": "BAR", "produto": "Copo Shot 50ml", "unidade": "UN", "preco": null}, {"codigo": "UE006", "categoria": "BAR", "produto": "Copo Whisky/Refrigerante 230ml", "unidade": "UN", "preco": null}, {"codigo": "UE007", "categoria": "BAR", "produto": "Copo Tulipa Cerveja", "unidade": "UN", "preco": null}, {"codigo": "UE008", "categoria": "BAR", "produto": "Jarra Clericot/Sangria 1L Vidro", "unidade": "UN", "preco": null}, {"codigo": "UE009", "categoria": "BAR", "produto": "Jarra Plástica 1L", "unidade": "UN", "preco": null}, {"codigo": "UE010", "categoria": "BAR", "produto": "Jarra Suco 1L (Bar)", "unidade": "UN", "preco": null}, {"codigo": "UE011", "categoria": "BAR", "produto": "Medidor Inox 50ml", "unidade": "UN", "preco": null}, {"codigo": "UE012", "categoria": "BAR", "produto": "Peneira Nº1 Inox", "unidade": "UN", "preco": null}, {"codigo": "UE013", "categoria": "BAR", "produto": "Taça Bico de Jaca 330ml", "unidade": "UN", "preco": null}, {"codigo": "UE014", "categoria": "BAR", "produto": "Taça Amarula 40ml", "unidade": "UN", "preco": null}, {"codigo": "UE015", "categoria": "BAR", "produto": "Taça Espumante 150ml", "unidade": "UN", "preco": null}, {"codigo": "UE016", "categoria": "BAR", "produto": "Taça Vinho 520ml", "unidade": "UN", "preco": null}, {"codigo": "UE017", "categoria": "BAR", "produto": "Taça Vinho 520ml Logo Hannover", "unidade": "UN", "preco": null}, {"codigo": "UE018", "categoria": "BAR", "produto": "Taça Vinho do Porto 150ml", "unidade": "UN", "preco": null}, {"codigo": "UE019", "categoria": "BAR", "produto": "Taça Margarita 240ml", "unidade": "UN", "preco": null}, {"codigo": "UE020", "categoria": "COZINHA", "produto": "Bule Café 4L Nº7", "unidade": "UN", "preco": null}, {"codigo": "UE021", "categoria": "COZINHA", "produto": "Bule Vinho 6L", "unidade": "UN", "preco": null}, {"codigo": "UE022", "categoria": "COZINHA", "produto": "Caixa Plástica Retangular 7L", "unidade": "UN", "preco": null}, {"codigo": "UE023", "categoria": "COZINHA", "produto": "Caixa Plástica Retangular 30L", "unidade": "UN", "preco": null}, {"codigo": "UE024", "categoria": "COZINHA", "produto": "Caldeirão Queijo 45L", "unidade": "UN", "preco": null}, {"codigo": "UE025", "categoria": "COZINHA", "produto": "Colher Arroz Inox 43/46cm", "unidade": "UN", "preco": null}, {"codigo": "UE026", "categoria": "COZINHA", "produto": "Colher Sopa Curva", "unidade": "UN", "preco": null}, {"codigo": "UE027", "categoria": "COZINHA", "produto": "Colher Mexer Queijo 65cm", "unidade": "UN", "preco": null}, {"codigo": "UE028", "categoria": "COZINHA", "produto": "Concha 600ml", "unidade": "UN", "preco": null}, {"codigo": "UE029", "categoria": "COZINHA", "produto": "Concha 400ml", "unidade": "UN", "preco": null}, {"codigo": "UE030", "categoria": "COZINHA", "produto": "Concha 170ml", "unidade": "UN", "preco": null}, {"codigo": "UE031", "categoria": "COZINHA", "produto": "Concha 240ml", "unidade": "UN", "preco": null}, {"codigo": "UE032", "categoria": "COZINHA", "produto": "Escorredor Macarrão 40cm", "unidade": "UN", "preco": null}, {"codigo": "UE033", "categoria": "COZINHA", "produto": "Faca Chef Nº12", "unidade": "UN", "preco": null}, {"codigo": "UE034", "categoria": "COZINHA", "produto": "Faca Chef Nº8", "unidade": "UN", "preco": null}, {"codigo": "UE035", "categoria": "COZINHA", "produto": "Faca Serra Cabo Madeira", "unidade": "UN", "preco": null}, {"codigo": "UE036", "categoria": "COZINHA", "produto": "Frigideira Média 35cm", "unidade": "UN", "preco": null}, {"codigo": "UE037", "categoria": "COZINHA", "produto": "Fue 45cm", "unidade": "UN", "preco": null}, {"codigo": "UE038", "categoria": "COZINHA", "produto": "Garrafa Térmica Café 2L", "unidade": "UN", "preco": null}, {"codigo": "UE039", "categoria": "COZINHA", "produto": "Jarra Suco 2L Colaboradores", "unidade": "UN", "preco": null}, {"codigo": "UE040", "categoria": "COZINHA", "produto": "Luva Cozinha Alta Temperatura", "unidade": "PAR", "preco": null}, {"codigo": "UE041", "categoria": "COZINHA", "produto": "Melamina Redonda 300ml", "unidade": "UN", "preco": null}, {"codigo": "UE042", "categoria": "COZINHA", "produto": "Panela Banho Maria 50L", "unidade": "UN", "preco": null}, {"codigo": "UE043", "categoria": "COZINHA", "produto": "Panela Modelo Canudo 11L", "unidade": "UN", "preco": null}, {"codigo": "UE044", "categoria": "COZINHA", "produto": "Pote Horizontal Frutas", "unidade": "UN", "preco": null}, {"codigo": "UE045", "categoria": "COZINHA", "produto": "Pote Vertical Molhos 3L", "unidade": "UN", "preco": null}, {"codigo": "UE046", "categoria": "COZINHA", "produto": "Potinho Manteiga 35ml Quadrado", "unidade": "UN", "preco": null}, {"codigo": "UE047", "categoria": "COZINHA", "produto": "Potinho Manteiga 30ml Redondo", "unidade": "UN", "preco": null}, {"codigo": "UE048", "categoria": "COZINHA", "produto": "Potinho Molheira Pequeno", "unidade": "UN", "preco": null}, {"codigo": "UE049", "categoria": "COZINHA", "produto": "Prato Melamina Retangular 31x16", "unidade": "UN", "preco": null}, {"codigo": "UE050", "categoria": "COZINHA", "produto": "Prato Oval Melamina Acompanhamento", "unidade": "UN", "preco": null}, {"codigo": "UE051", "categoria": "COZINHA", "produto": "Tábua Reposição Ondulada", "unidade": "UN", "preco": null}, {"codigo": "UE052", "categoria": "PAPELARIA", "produto": "Nota Neutra", "unidade": "BLOCO 50", "preco": null}, {"codigo": "UE053", "categoria": "PAPELARIA", "produto": "Bobina Térmica 60x40", "unidade": "UN", "preco": null}, {"codigo": "UE054", "categoria": "PAPELARIA", "produto": "Bobina Fiscal", "unidade": "UN", "preco": null}, {"codigo": "UE055", "categoria": "PAPELARIA", "produto": "Bobina Maquineta Rede", "unidade": "UN", "preco": null}, {"codigo": "UE056", "categoria": "PAPELARIA", "produto": "Bolinha Adesiva Vinho", "unidade": "CARTELA", "preco": null}, {"codigo": "UE057", "categoria": "PAPELARIA", "produto": "Livro Comanda Convidado", "unidade": "UN", "preco": null}, {"codigo": "UE058", "categoria": "PAPELARIA", "produto": "Caderno Colorir Infantil", "unidade": "KIT", "preco": null}, {"codigo": "UE059", "categoria": "PAPELARIA", "produto": "Cartão Consumo", "unidade": "PAC 1000", "preco": null}, {"codigo": "UE060", "categoria": "PAPELARIA", "produto": "Comanda Garçom", "unidade": "PAC 10", "preco": null}, {"codigo": "UE061", "categoria": "PAPELARIA", "produto": "Corretivo", "unidade": "UN", "preco": null}, {"codigo": "UE062", "categoria": "PAPELARIA", "produto": "Envelope A4", "unidade": "UN", "preco": null}, {"codigo": "UE063", "categoria": "PAPELARIA", "produto": "Etiqueta Validade", "unidade": "UN", "preco": null}, {"codigo": "UE064", "categoria": "PAPELARIA", "produto": "Grampos 26/6", "unidade": "CX 5000", "preco": null}, {"codigo": "UE065", "categoria": "PAPELARIA", "produto": "Sulfite", "unidade": "CX 500", "preco": null}, {"codigo": "UE066", "categoria": "PAPELARIA", "produto": "Tinta Impressora 544 Amarelo", "unidade": "UN", "preco": null}, {"codigo": "UE067", "categoria": "PAPELARIA", "produto": "Tinta Impressora 544 Ciano", "unidade": "UN", "preco": null}, {"codigo": "UE068", "categoria": "PAPELARIA", "produto": "Tinta Impressora 544 Pink", "unidade": "UN", "preco": null}, {"codigo": "UE069", "categoria": "PAPELARIA", "produto": "Tinta Impressora 544 Preto", "unidade": "UN", "preco": null}, {"codigo": "UE070", "categoria": "FONDUE", "produto": "Apagador Madeira Rechaud", "unidade": "UN", "preco": null}, {"codigo": "UE071", "categoria": "FONDUE", "produto": "Caçarola Barro Marrom/Branco", "unidade": "UN", "preco": null}, {"codigo": "UE072", "categoria": "FONDUE", "produto": "Caçarola Preta Carne Óleo", "unidade": "UN", "preco": null}, {"codigo": "UE073", "categoria": "FONDUE", "produto": "Caçarola Cobre Doce", "unidade": "UN", "preco": null}, {"codigo": "UE074", "categoria": "FONDUE", "produto": "Chapa Ferro Carne", "unidade": "UN", "preco": null}, {"codigo": "UE075", "categoria": "FONDUE", "produto": "Copinho Álcool Gel", "unidade": "UN", "preco": null}, {"codigo": "UE076", "categoria": "FONDUE", "produto": "Garfo Fondue 2 Dentes", "unidade": "UN", "preco": null}, {"codigo": "UE077", "categoria": "FONDUE", "produto": "Panela Queijo Swissmar", "unidade": "UN", "preco": null}, {"codigo": "UE078", "categoria": "FONDUE", "produto": "Proteção Anti-Respingos Óleo", "unidade": "UN", "preco": null}, {"codigo": "UE079", "categoria": "FONDUE", "produto": "Rechaud Doce Pequeno", "unidade": "UN", "preco": null}, {"codigo": "UE080", "categoria": "FONDUE", "produto": "Rechaud Óleo/Vinho Médio", "unidade": "UN", "preco": null}, {"codigo": "UE081", "categoria": "FONDUE", "produto": "Rechaud Queijo Grande", "unidade": "UN", "preco": null}, {"codigo": "UE082", "categoria": "FONDUE", "produto": "Tampa Caçarola Vinho", "unidade": "UN", "preco": null}, {"codigo": "UE083", "categoria": "FONDUE", "produto": "Torre Cobre Antepasto", "unidade": "UN", "preco": null}, {"codigo": "UE084", "categoria": "SALÃO", "produto": "Balde Lixo 100L", "unidade": "UN", "preco": null}, {"codigo": "UE085", "categoria": "SALÃO", "produto": "Bandeja Antiderrapante 40cm", "unidade": "UN", "preco": null}, {"codigo": "UE086", "categoria": "SALÃO", "produto": "Bowl Salada 29cm", "unidade": "UN", "preco": null}, {"codigo": "UE087", "categoria": "SALÃO", "produto": "Decanter 1L", "unidade": "UN", "preco": null}, {"codigo": "UE088", "categoria": "SALÃO", "produto": "Guardanapo Vinho 40x40", "unidade": "UN", "preco": null}, {"codigo": "UE089", "categoria": "SALÃO", "produto": "Jogo Americano Couro 39x29", "unidade": "UN", "preco": null}, {"codigo": "UE090", "categoria": "SALÃO", "produto": "Porta Contas Couro", "unidade": "UN", "preco": null}, {"codigo": "UE091", "categoria": "SALÃO", "produto": "Prato Sobremesa 20cm", "unidade": "UN", "preco": null}, {"codigo": "UE092", "categoria": "SALÃO", "produto": "Prato Raso 24cm", "unidade": "UN", "preco": null}, {"codigo": "UE093", "categoria": "SALÃO", "produto": "Prato Raso 26cm", "unidade": "UN", "preco": null}, {"codigo": "UE094", "categoria": "SALÃO", "produto": "Prato Branco Pequeno", "unidade": "UN", "preco": null}, {"codigo": "UE095", "categoria": "SALÃO", "produto": "Prato Branco 27,5cm", "unidade": "UN", "preco": null}, {"codigo": "UE096", "categoria": "SALÃO", "produto": "Vela LED Decorativa", "unidade": "UN", "preco": null}, {"codigo": "UE097", "categoria": "SALÃO", "produto": "X Vermelho EVA", "unidade": "UN", "preco": null}, {"codigo": "UE098", "categoria": "SALÃO", "produto": "Xícara Café Pequena", "unidade": "UN", "preco": null}, {"codigo": "VI001", "categoria": "VINHO", "produto": "Espumante – Chandon Reserve Brut", "unidade": "UN", "preco": 73.64}, {"codigo": "VI002", "categoria": "VINHO", "produto": "Espumante – Chandon Passion Rosé", "unidade": "UN", "preco": 10.81}, {"codigo": "VI003", "categoria": "VINHO", "produto": "Espumante – Moët Impérial Brut", "unidade": "UN", "preco": 347.7}, {"codigo": "VI004", "categoria": "VINHO", "produto": "Espumante – Lambrusco Dell’Emilia Bianco", "unidade": "UN", "preco": null}, {"codigo": "VI005", "categoria": "VINHO", "produto": "Espumante – Lambrusco Dell’Emilia Rosso", "unidade": "UN", "preco": 13.78}, {"codigo": "VI006", "categoria": "VINHO", "produto": "Branco – Nederburg I79I Sauvignon Blanc", "unidade": "UN", "preco": 68.63}, {"codigo": "VI007", "categoria": "VINHO", "produto": "Branco – OH01 Riesling Dry", "unidade": "UN", "preco": 77.12}, {"codigo": "VI008", "categoria": "VINHO", "produto": "Branco – La Linda Torrontés", "unidade": "UN", "preco": 56.65}, {"codigo": "VI009", "categoria": "VINHO", "produto": "Branco – Luigi Bosca Chardonnay", "unidade": "UN", "preco": 102.89}, {"codigo": "VI010", "categoria": "VINHO", "produto": "Branco – White Blend De Sangre", "unidade": "UN", "preco": 114.53}, {"codigo": "VI011", "categoria": "VINHO", "produto": "Branco – Tabali Sauvignon Blanc", "unidade": "UN", "preco": 83.36}, {"codigo": "VI012", "categoria": "VINHO", "produto": "Branco – Santa Carolina Chardonnay", "unidade": "UN", "preco": 50.07}, {"codigo": "VI013", "categoria": "VINHO", "produto": "Branco – Pata Negra Verdejo", "unidade": "UN", "preco": 33.76}, {"codigo": "VI014", "categoria": "VINHO", "produto": "Branco – Luccarelli Bianco", "unidade": "UN", "preco": 83.65}, {"codigo": "VI015", "categoria": "VINHO", "produto": "Branco – Castellani Corbelli Pinot Grigio", "unidade": "UN", "preco": 61.78}, {"codigo": "VI016", "categoria": "VINHO", "produto": "Branco – Vinho Verde Varanda do Conde", "unidade": "UN", "preco": 86.66}, {"codigo": "VI017", "categoria": "VINHO", "produto": "Rosé – Nederburg Rosé", "unidade": "UN", "preco": 64.44}, {"codigo": "VI018", "categoria": "VINHO", "produto": "Rosé – La Linda Rosé Malbec", "unidade": "UN", "preco": 56.65}, {"codigo": "VI019", "categoria": "VINHO", "produto": "Rosé – Carolina Reserva Rosé", "unidade": "UN", "preco": 37.92}, {"codigo": "VI020", "categoria": "VINHO", "produto": "Rosé – Claude Val Rosé", "unidade": "UN", "preco": 66.27}, {"codigo": "VI021", "categoria": "VINHO", "produto": "Rosé – Jas Des Vignes Provence Rosé", "unidade": "UN", "preco": 115.58}, {"codigo": "VI022", "categoria": "VINHO", "produto": "Tinto – Nederburg I79I Pinotage", "unidade": "UN", "preco": 68.63}, {"codigo": "VI023", "categoria": "VINHO", "produto": "Tinto – Nederburg I79I Shiraz", "unidade": "UN", "preco": 68.63}, {"codigo": "VI024", "categoria": "VINHO", "produto": "Tinto – Finca La Linda Malbec", "unidade": "UN", "preco": 43.02}, {"codigo": "VI025", "categoria": "VINHO", "produto": "Tinto – Norton Sexy Fish Cabernet Franc", "unidade": "UN", "preco": 51.6}, {"codigo": "VI026", "categoria": "VINHO", "produto": "Tinto – La Linda Cabernet Sauvignon", "unidade": "UN", "preco": 43.02}, {"codigo": "VI027", "categoria": "VINHO", "produto": "Tinto – Luigi Bosca Cabernet Sauvignon", "unidade": "UN", "preco": 102.89}, {"codigo": "VI028", "categoria": "VINHO", "produto": "Tinto – Luigi Bosca Malbec", "unidade": "UN", "preco": 102.89}, {"codigo": "VI029", "categoria": "VINHO", "produto": "Tinto – Cabernet Franc De Sangre", "unidade": "UN", "preco": 148.41}, {"codigo": "VI030", "categoria": "VINHO", "produto": "Tinto – Malbec Edición Limitada De Sangre", "unidade": "UN", "preco": 148.41}, {"codigo": "VI031", "categoria": "VINHO", "produto": "Tinto – Alfredo Roca Pinot Noir", "unidade": "UN", "preco": 61.11}, {"codigo": "VI032", "categoria": "VINHO", "produto": "Tinto – Alfredo Roca Cabernet Sauvignon", "unidade": "UN", "preco": 55.19}, {"codigo": "VI033", "categoria": "VINHO", "produto": "Tinto – Luigi Bosca Paraíso", "unidade": "UN", "preco": null}, {"codigo": "VI034", "categoria": "VINHO", "produto": "Tinto – Norton Malbec D.O.C", "unidade": "UN", "preco": 74.25}, {"codigo": "VI035", "categoria": "VINHO", "produto": "Tinto – Santa Carolina Reserva Cabernet Sauvignon", "unidade": "UN", "preco": 58.34}, {"codigo": "VI036", "categoria": "VINHO", "produto": "Tinto – Carolina Reserva Merlot", "unidade": "UN", "preco": 54.95}, {"codigo": "VI037", "categoria": "VINHO", "produto": "Tinto – Gran Reserva Carolina Carménère", "unidade": "UN", "preco": 85.25}, {"codigo": "VI038", "categoria": "VINHO", "produto": "Tinto – VSC Santa Carolina", "unidade": "UN", "preco": 390.04}, {"codigo": "VI039", "categoria": "VINHO", "produto": "Tinto – Estelar Cabernet Sauvignon", "unidade": "UN", "preco": 38.27}, {"codigo": "VI040", "categoria": "VINHO", "produto": "Tinto – Estelar Carménère", "unidade": "UN", "preco": 38.27}, {"codigo": "VI041", "categoria": "VINHO", "produto": "Tinto – Caliterra Reserva Carmenere", "unidade": "UN", "preco": 58.32}, {"codigo": "VI042", "categoria": "VINHO", "produto": "Tinto – Tabali Pinot Noir", "unidade": "UN", "preco": 83.36}, {"codigo": "VI043", "categoria": "VINHO", "produto": "Tinto – Marqués De Tomares Crianza", "unidade": "UN", "preco": 112.83}, {"codigo": "VI044", "categoria": "VINHO", "produto": "Tinto – 99 Rosas Orgânico", "unidade": "UN", "preco": 68.7}, {"codigo": "VI045", "categoria": "VINHO", "produto": "Tinto – Luis Cañas Rioja Crianza", "unidade": "UN", "preco": 157.73}, {"codigo": "VI046", "categoria": "VINHO", "produto": "Tinto – Pata Negra Oro Tempranillo", "unidade": "UN", "preco": 31.73}, {"codigo": "VI047", "categoria": "VINHO", "produto": "Tinto – Arrogant Frog Tutti-Frutti", "unidade": "UN", "preco": 57.78}, {"codigo": "VI048", "categoria": "VINHO", "produto": "Tinto – Chateau Labat", "unidade": "UN", "preco": 220.1}, {"codigo": "VI049", "categoria": "VINHO", "produto": "Tinto – Corbelli Chianti", "unidade": "UN", "preco": 68.6}, {"codigo": "VI050", "categoria": "VINHO", "produto": "Tinto – Michele Chiarlo Barbera D'Asti", "unidade": "UN", "preco": 147.68}, {"codigo": "VI051", "categoria": "VINHO", "produto": "Tinto – Umani Ronchi Montepulciano D’Abruzzo", "unidade": "UN", "preco": 78.86}, {"codigo": "VI052", "categoria": "VINHO", "produto": "Tinto – Camigliano Brunello Di Montalcino", "unidade": "UN", "preco": 586.42}, {"codigo": "VI053", "categoria": "VINHO", "produto": "Tinto – Solea Nero D’Avola", "unidade": "UN", "preco": 99.43}, {"codigo": "VI054", "categoria": "VINHO", "produto": "Tinto – Luccarelli Puglia", "unidade": "UN", "preco": 90.17}, {"codigo": "VI055", "categoria": "VINHO", "produto": "Tinto – Forte Ambrone", "unidade": "UN", "preco": 72.05}, {"codigo": "VI056", "categoria": "VINHO", "produto": "Tinto – J.M Da Fonseca José De Sousa", "unidade": "UN", "preco": 124.78}, {"codigo": "VI057", "categoria": "VINHO", "produto": "Tinto – Loios Alentejo", "unidade": "UN", "preco": 54.95}, {"codigo": "VI058", "categoria": "VINHO", "produto": "Tinto – Carmim Monsaraz", "unidade": "UN", "preco": 58.96}, {"codigo": "VI059", "categoria": "VINHO", "produto": "Tinto – Tons De Duorum", "unidade": "UN", "preco": 83.3}, {"codigo": "VI060", "categoria": "VINHO", "produto": "Tinto – Terras Del Rei", "unidade": "UN", "preco": 41.29}, {"codigo": "VI061", "categoria": "VINHO", "produto": "Tinto – Montes Toscanini Reserva Familiar Tannat", "unidade": "UN", "preco": 64.72}, {"codigo": "VI062", "categoria": "VINHO", "produto": "Premium – Norton Gernot", "unidade": "UN", "preco": 794.2}, {"codigo": "VI063", "categoria": "VINHO", "produto": "Premium – Cohiba Atmosphere Reserva", "unidade": "UN", "preco": 453.45}, {"codigo": "VI064", "categoria": "VINHO", "produto": "Premium – Bertani Amarone Valpantena", "unidade": "UN", "preco": null}, {"codigo": "VI065", "categoria": "VINHO", "produto": "Premium – Barollo Cerequio M. Chiarlo", "unidade": "UN", "preco": null}, {"codigo": "VI066", "categoria": "VINHO", "produto": "Branco – Terra Noble Chardonnay 375ml", "unidade": "UN", "preco": 27.91}, {"codigo": "VI067", "categoria": "VINHO", "produto": "Branco – Vistana Sauvignon Blanc 375ml", "unidade": "UN", "preco": null}, {"codigo": "VI068", "categoria": "VINHO", "produto": "Tinto – Terra Noble Cabernet Sauvignon 375ml", "unidade": "UN", "preco": 48.3}, {"codigo": "VI069", "categoria": "VINHO", "produto": "Tinto – Alfredo Roca Malbec 375ml", "unidade": "UN", "preco": 39.0}, {"codigo": "VI070", "categoria": "VINHO", "produto": "Tinto – Vistana Cabernet Sauvignon 187ml", "unidade": "UN", "preco": 20.16}, {"codigo": "UN001", "categoria": "UNIFORME", "produto": "Avental PVC", "unidade": "UN", "preco": null}, {"codigo": "UN002", "categoria": "UNIFORME", "produto": "Camiseta Básica Branca GG", "unidade": "UN", "preco": null}, {"codigo": "UN003", "categoria": "UNIFORME", "produto": "Camiseta Básica Branca G", "unidade": "UN", "preco": null}, {"codigo": "UN004", "categoria": "UNIFORME", "produto": "Camiseta Básica Branca M", "unidade": "UN", "preco": null}, {"codigo": "UN005", "categoria": "UNIFORME", "produto": "Camiseta Básica Branca P", "unidade": "UN", "preco": null}, {"codigo": "UN006", "categoria": "UNIFORME", "produto": "Calça Xadrez 60", "unidade": "UN", "preco": null}, {"codigo": "UN007", "categoria": "UNIFORME", "produto": "Calça Xadrez G2", "unidade": "UN", "preco": null}, {"codigo": "UN008", "categoria": "UNIFORME", "produto": "Calça Xadrez Extra GG", "unidade": "UN", "preco": null}, {"codigo": "UN009", "categoria": "UNIFORME", "produto": "Calça Xadrez G", "unidade": "UN", "preco": null}, {"codigo": "UN010", "categoria": "UNIFORME", "produto": "Calça Xadrez M", "unidade": "UN", "preco": null}, {"codigo": "UN011", "categoria": "UNIFORME", "produto": "Calça Xadrez P", "unidade": "UN", "preco": null}, {"codigo": "UN012", "categoria": "UNIFORME", "produto": "Crocs 33/34", "unidade": "UN", "preco": null}, {"codigo": "UN013", "categoria": "UNIFORME", "produto": "Crocs 35/36", "unidade": "UN", "preco": null}, {"codigo": "UN014", "categoria": "UNIFORME", "produto": "Crocs 37/38", "unidade": "UN", "preco": null}, {"codigo": "UN015", "categoria": "UNIFORME", "produto": "Crocs 39/40", "unidade": "UN", "preco": null}, {"codigo": "UN016", "categoria": "UNIFORME", "produto": "Crocs 41/42", "unidade": "UN", "preco": null}, {"codigo": "UN017", "categoria": "UNIFORME", "produto": "Crocs 43/44", "unidade": "UN", "preco": null}, {"codigo": "UN018", "categoria": "UNIFORME", "produto": "Touca Bandana Masculina", "unidade": "UN", "preco": null}, {"codigo": "UN019", "categoria": "UNIFORME", "produto": "Touca com Renda Feminina", "unidade": "UN", "preco": null}, {"codigo": "UN020", "categoria": "UNIFORME", "produto": "Avental Preto", "unidade": "UN", "preco": null}, {"codigo": "UN021", "categoria": "UNIFORME", "produto": "Calça Legging G", "unidade": "UN", "preco": null}, {"codigo": "UN022", "categoria": "UNIFORME", "produto": "Calça Legging M", "unidade": "UN", "preco": null}, {"codigo": "UN023", "categoria": "UNIFORME", "produto": "Calça Legging GG", "unidade": "UN", "preco": null}, {"codigo": "UN024", "categoria": "UNIFORME", "produto": "Calça Legging EXG", "unidade": "UN", "preco": null}, {"codigo": "UN025", "categoria": "UNIFORME", "produto": "Calça Legging EXGG", "unidade": "UN", "preco": null}, {"codigo": "UN026", "categoria": "UNIFORME", "produto": "Avental de Cintura Preto Garçom", "unidade": "UN", "preco": null}, {"codigo": "UN027", "categoria": "UNIFORME", "produto": "Camisa Social Feminina Manga Curta Tam 1", "unidade": "UN", "preco": null}, {"codigo": "UN028", "categoria": "UNIFORME", "produto": "Camisa Social Feminina Manga Curta Tam 2", "unidade": "UN", "preco": null}, {"codigo": "UN029", "categoria": "UNIFORME", "produto": "Camisa Social Feminina Manga Curta Tam 3", "unidade": "UN", "preco": null}, {"codigo": "UN030", "categoria": "UNIFORME", "produto": "Camisa Social Feminina Manga Curta Tam 4", "unidade": "UN", "preco": null}, {"codigo": "UN031", "categoria": "UNIFORME", "produto": "Camisa Social Masculina Manga Longa Tam 1", "unidade": "UN", "preco": null}, {"codigo": "UN032", "categoria": "UNIFORME", "produto": "Camisa Social Masculina Manga Longa Tam 2", "unidade": "UN", "preco": null}, {"codigo": "UN033", "categoria": "UNIFORME", "produto": "Camisa Social Masculina Manga Longa Tam 3", "unidade": "UN", "preco": null}, {"codigo": "UN034", "categoria": "UNIFORME", "produto": "Camisa Social Masculina Manga Longa Tam 4", "unidade": "UN", "preco": null}, {"codigo": "UN035", "categoria": "UNIFORME", "produto": "Crachá Magnético", "unidade": "UN", "preco": null}, {"codigo": "UN036", "categoria": "UNIFORME", "produto": "Gravata Borboleta Dourada", "unidade": "UN", "preco": null}, {"codigo": "UN037", "categoria": "UNIFORME", "produto": "Avental Proteção Alta Temperatura", "unidade": "UN", "preco": null}, {"codigo": "UN038", "categoria": "UNIFORME", "produto": "Avental Vermelho Treinamento", "unidade": "UN", "preco": null}, {"codigo": "UN039", "categoria": "UNIFORME", "produto": "Luva Alta Temperatura", "unidade": "UN", "preco": null}, {"codigo": "UN040", "categoria": "UNIFORME", "produto": "Luva Baixa Temperatura", "unidade": "UN", "preco": null}, {"codigo": "UN041", "categoria": "UNIFORME", "produto": "Luva Malha de Aço Anti-Corte", "unidade": "UN", "preco": null}, {"codigo": "UN042", "categoria": "UNIFORME", "produto": "Vestido Preto Logo Hannover P", "unidade": "UN", "preco": null}, {"codigo": "UN043", "categoria": "UNIFORME", "produto": "Vestido Preto Logo Hannover M", "unidade": "UN", "preco": null}, {"codigo": "UN044", "categoria": "UNIFORME", "produto": "Vestido Preto Logo Hannover G", "unidade": "UN", "preco": null}, {"codigo": "UN045", "categoria": "UNIFORME", "produto": "Colar de Pérolas", "unidade": "UN", "preco": null}, {"codigo": "UN046", "categoria": "UNIFORME", "produto": "Camiseta Básica Preta G", "unidade": "UN", "preco": null}, {"codigo": "UN047", "categoria": "UNIFORME", "produto": "Camiseta Básica Preta GG", "unidade": "UN", "preco": null}, {"codigo": "UN048", "categoria": "UNIFORME", "produto": "Camiseta Básica Preta M", "unidade": "UN", "preco": null}, {"codigo": "UN049", "categoria": "UNIFORME", "produto": "Camiseta Básica Preta P", "unidade": "UN", "preco": null}, {"codigo": "UN050", "categoria": "UNIFORME", "produto": "Calça Brim Preta P", "unidade": "UN", "preco": null}, {"codigo": "UN051", "categoria": "UNIFORME", "produto": "Calça Brim Preta M", "unidade": "UN", "preco": null}, {"codigo": "UN052", "categoria": "UNIFORME", "produto": "Calça Brim Preta G", "unidade": "UN", "preco": null}, {"codigo": "UN053", "categoria": "UNIFORME", "produto": "Calça Brim Preta GG", "unidade": "UN", "preco": null}, {"codigo": "UN054", "categoria": "UNIFORME", "produto": "Camisa Social Salmão P", "unidade": "UN", "preco": null}, {"codigo": "UN055", "categoria": "UNIFORME", "produto": "Camisa Social Salmão M", "unidade": "UN", "preco": null}, {"codigo": "UN056", "categoria": "UNIFORME", "produto": "Camisa Social Rosa G", "unidade": "UN", "preco": null}, {"codigo": "UN057", "categoria": "UNIFORME", "produto": "Colete Social Preto P", "unidade": "UN", "preco": null}, {"codigo": "UN058", "categoria": "UNIFORME", "produto": "Colete Social Preto M", "unidade": "UN", "preco": null}, {"codigo": "UN059", "categoria": "UNIFORME", "produto": "Colete Social Preto G", "unidade": "UN", "preco": null}, {"codigo": "UN060", "categoria": "UNIFORME", "produto": "Jaqueta Japona P", "unidade": "UN", "preco": null}, {"codigo": "UN061", "categoria": "UNIFORME", "produto": "Jaqueta Japona M", "unidade": "UN", "preco": null}, {"codigo": "UN062", "categoria": "UNIFORME", "produto": "Jaqueta Japona G", "unidade": "UN", "preco": null}, {"codigo": "UN063", "categoria": "UNIFORME", "produto": "Jaqueta Japona GG", "unidade": "UN", "preco": null}, {"codigo": "UN064", "categoria": "UNIFORME", "produto": "Balaclava Térmica", "unidade": "UN", "preco": null}, {"codigo": "AC001", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Arroz Tradicional", "unidade": "kg", "preco": null}, {"codigo": "AC002", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Feijão Carioca", "unidade": "kg", "preco": null}, {"codigo": "AC003", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Macarrão Espaguete", "unidade": "UN", "preco": null}, {"codigo": "AC004", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Sal Refinado", "unidade": "kg", "preco": null}, {"codigo": "AC005", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Café em Pó 500g", "unidade": "UN", "preco": null}, {"codigo": "AC006", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Molho de Tomate", "unidade": "UN", "preco": null}, {"codigo": "AC007", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Farinha de Trigo", "unidade": "UN", "preco": null}, {"codigo": "AC008", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Suco em Pó", "unidade": "UN", "preco": null}, {"codigo": "AC009", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Coca Cola Zero 2L", "unidade": "UN", "preco": null}, {"codigo": "AC010", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Guaraná Zero 2L", "unidade": "UN", "preco": null}, {"codigo": "AC011", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "CREME DE LEITE UHT", "unidade": "UN", "preco": null}, {"codigo": "AC012", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "Farinha de Mandioca", "unidade": "Kg", "preco": null}, {"codigo": "AC013", "categoria": "ALIMENTAÇÃO COLABORADORES", "produto": "AÇÚCAR REFINADO", "unidade": "KG", "preco": null}], "manipulados_ht": [{"codigo": "M001", "categoria": "MANIPULADOS", "produto": "PUDIM", "unidade": "BAG", "preco": null}, {"codigo": "M002", "categoria": "MANIPULADOS", "produto": "PARMESÃO RALADO", "unidade": "BAG 2KG", "preco": null}, {"codigo": "M003", "categoria": "MANIPULADOS", "produto": "PARMESÃO PEDAÇO", "unidade": "BAG 1KG", "preco": null}, {"codigo": "M004", "categoria": "MANIPULADOS", "produto": "FONDUTA DE PARMESÃO", "unidade": "BAG 1KG", "preco": null}, {"codigo": "M005", "categoria": "MANIPULADOS", "produto": "SARDELA", "unidade": "BAG 1KG", "preco": null}, {"codigo": "M006", "categoria": "MANIPULADOS", "produto": "GELEIA DE DAMASCO", "unidade": "BAG 2KG", "preco": null}, {"codigo": "M007", "categoria": "MANIPULADOS", "produto": "GOIABADA SPICY", "unidade": "BAG 2KG", "preco": null}, {"codigo": "M008", "categoria": "MANIPULADOS", "produto": "MANTEIGA COUVERT", "unidade": "BAG 1KG", "preco": null}, {"codigo": "M009", "categoria": "MANIPULADOS", "produto": "DIJON", "unidade": "BAG 2KG", "preco": null}, {"codigo": "M010", "categoria": "MANIPULADOS", "produto": "LEITE NINHO", "unidade": "BAG", "preco": null}, {"codigo": "R001", "categoria": "REFRIGERADOS", "produto": "CREAM CHEESE", "unidade": "BISNAGA 1KG", "preco": null}, {"codigo": "R002", "categoria": "REFRIGERADOS", "produto": "REQUEIJÃO CATUPIRY", "unidade": "BISNAGA 1,5KG", "preco": null}, {"codigo": "R003", "categoria": "REFRIGERADOS", "produto": "CREME DE LEITE FRESCO", "unidade": "UNIDADE 500ML", "preco": null}, {"codigo": "R004", "categoria": "REFRIGERADOS", "produto": "QUEIJO COALHO", "unidade": "BAG 5KG", "preco": null}, {"codigo": "R005", "categoria": "REFRIGERADOS", "produto": "MANTEIGA", "unidade": "BARRA 5KG", "preco": null}, {"codigo": "R006", "categoria": "REFRIGERADOS", "produto": "GORGONZOLA", "unidade": "BAG 1KG", "preco": null}, {"codigo": "C001", "categoria": "CONGELADOS", "produto": "TOMAHAWK PRESTIGE TAMANHO M (1200G)", "unidade": "KG", "preco": null}, {"codigo": "C002", "categoria": "CONGELADOS", "produto": "BABY BEEF", "unidade": "PEÇA / KG", "preco": null}, {"codigo": "C003", "categoria": "CONGELADOS", "produto": "CUPIM", "unidade": "PEÇA / KG", "preco": null}, {"codigo": "C004", "categoria": "CONGELADOS", "produto": "PICANHA", "unidade": "PEÇA / KG", "preco": null}, {"codigo": "C005", "categoria": "CONGELADOS", "produto": "BACON BOVINO", "unidade": "PEÇA / KG", "preco": null}, {"codigo": "C006", "categoria": "CONGELADOS", "produto": "BATATA PALITO", "unidade": "PAC 2,5KG", "preco": null}, {"codigo": "P001", "categoria": "PÃES", "produto": "SOURDOUGH", "unidade": "PAC 60 FATIAS", "preco": null}, {"codigo": "P002", "categoria": "PÃES", "produto": "PÃO DE FORMA", "unidade": "PACOTE", "preco": null}, {"codigo": "CC001", "categoria": "CONGELADOS - ALIM. COLABORADORES", "produto": "SASAMI", "unidade": "KG", "preco": null}, {"codigo": "CC002", "categoria": "CONGELADOS - ALIM. COLABORADORES", "produto": "ACÉM", "unidade": "KG", "preco": null}, {"codigo": "CC003", "categoria": "CONGELADOS - ALIM. COLABORADORES", "produto": "LINGUIÇA TOSCANA", "unidade": "BAG", "preco": null}, {"codigo": "CC004", "categoria": "CONGELADOS - ALIM. COLABORADORES", "produto": "CHICKEN SUPREME", "unidade": "KG", "preco": null}], "hamburgo_seca": [{"codigo": "S001", "categoria": "SECOS E DURADOUROS", "produto": "AÇÚCAR REFINADO", "unidade": "KG", "preco": null}, {"codigo": "S002", "categoria": "SECOS E DURADOUROS", "produto": "MOLHO DE TOMATE", "unidade": "UNIDADE", "preco": null}, {"codigo": "S003", "categoria": "SECOS E DURADOUROS", "produto": "ARROZ ARBÓREO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S004", "categoria": "SECOS E DURADOUROS", "produto": "ARROZ BRANCO", "unidade": "UNIDADE 5KG", "preco": null}, {"codigo": "S005", "categoria": "SECOS E DURADOUROS", "produto": "AZEITE YBARRA", "unidade": "UNIDADE 5L", "preco": null}, {"codigo": "S006", "categoria": "SECOS E DURADOUROS", "produto": "CACHAÇA VELHO BARREIRO", "unidade": "UNIDADE 1L", "preco": null}, {"codigo": "S007", "categoria": "SECOS E DURADOUROS", "produto": "CHOCOLATE AMARGO SICAO GOTAS", "unidade": "UNIDADE 2KG", "preco": null}, {"codigo": "S008", "categoria": "SECOS E DURADOUROS", "produto": "CREME DE LEITE ITALAC", "unidade": "LITRO", "preco": null}, {"codigo": "S009", "categoria": "SECOS E DURADOUROS", "produto": "FARINHA PANKO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S010", "categoria": "SECOS E DURADOUROS", "produto": "FARINHA TRIGO", "unidade": "UNIDADE 5KG", "preco": null}, {"codigo": "S011", "categoria": "SECOS E DURADOUROS", "produto": "FAROFA PRONTA YOKI", "unidade": "UNIDADE", "preco": null}, {"codigo": "S012", "categoria": "SECOS E DURADOUROS", "produto": "FEIJÃO CARIOCA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S013", "categoria": "SECOS E DURADOUROS", "produto": "FUNGHI SECO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S014", "categoria": "SECOS E DURADOUROS", "produto": "GELEIA DE PIMENTA VIDRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "S015", "categoria": "SECOS E DURADOUROS", "produto": "LEITE INTEGRAL", "unidade": "LITRO", "preco": null}, {"codigo": "S016", "categoria": "SECOS E DURADOUROS", "produto": "MAIONESE HELLMANN'S", "unidade": "UNIDADE 3KG", "preco": null}, {"codigo": "S017", "categoria": "SECOS E DURADOUROS", "produto": "MARSHMALLOW BRANCO", "unidade": "CAIXA", "preco": null}, {"codigo": "S018", "categoria": "SECOS E DURADOUROS", "produto": "MEL DE ABELHA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S019", "categoria": "SECOS E DURADOUROS", "produto": "MISTURA LÁCTEA LIMONADA SUÍÇA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S020", "categoria": "SECOS E DURADOUROS", "produto": "MOLHO INGLÊS", "unidade": "VIDRO 250ML", "preco": null}, {"codigo": "S021", "categoria": "SECOS E DURADOUROS", "produto": "MOSTARDA AMARELA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S022", "categoria": "SECOS E DURADOUROS", "produto": "ÓLEO DE GIRASSOL", "unidade": "UNIDADE 900ML", "preco": null}, {"codigo": "S023", "categoria": "SECOS E DURADOUROS", "produto": "POTE PARA PUDIM PEQUENO", "unidade": "PACOTE", "preco": null}, {"codigo": "S024", "categoria": "SECOS E DURADOUROS", "produto": "POTE PARA PUDIM GRANDE", "unidade": "PACOTE", "preco": null}, {"codigo": "S025", "categoria": "SECOS E DURADOUROS", "produto": "REDUÇÃO BALSÂMICO", "unidade": "UNIDADE 250ML", "preco": null}, {"codigo": "S026", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ AÇÚCAR UNIÃO", "unidade": "CAIXA", "preco": null}, {"codigo": "S027", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ ADOÇANTE", "unidade": "CAIXA", "preco": null}, {"codigo": "S028", "categoria": "SECOS E DURADOUROS", "produto": "SAL GROSSO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S029", "categoria": "SECOS E DURADOUROS", "produto": "SAL PARRILA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S030", "categoria": "SECOS E DURADOUROS", "produto": "SAL REFINADO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S031", "categoria": "SECOS E DURADOUROS", "produto": "SUSPIRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "S032", "categoria": "SECOS E DURADOUROS", "produto": "TABASCO VIDRO CONVIDADOS", "unidade": "UNIDADE", "preco": null}, {"codigo": "S033", "categoria": "SECOS E DURADOUROS", "produto": "TAPIOCA GRANULADA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S034", "categoria": "SECOS E DURADOUROS", "produto": "TOMATE PELADO", "unidade": "LATA 400G", "preco": null}, {"codigo": "S035", "categoria": "SECOS E DURADOUROS", "produto": "TOMATE SECO", "unidade": "BALDE", "preco": null}, {"codigo": "S036", "categoria": "SECOS E DURADOUROS", "produto": "VINAGRE ÁLCOOL", "unidade": "UNIDADE 750ML", "preco": null}, {"codigo": "S037", "categoria": "SECOS E DURADOUROS", "produto": "VINAGRE BALSÂMICO", "unidade": "UNIDADE 500ML", "preco": null}, {"codigo": "S038", "categoria": "SECOS E DURADOUROS", "produto": "PÓ DE CAFÉ PARA COLABORADOR", "unidade": "UNIDADE", "preco": null}, {"codigo": "S039", "categoria": "SECOS E DURADOUROS", "produto": "MARMITA PARA VIAGEM", "unidade": "CAIXA", "preco": null}, {"codigo": "S040", "categoria": "SECOS E DURADOUROS", "produto": "BATATA PALHA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S041", "categoria": "SECOS E DURADOUROS", "produto": "CALDO DE LEGUMES", "unidade": "KG", "preco": null}, {"codigo": "A001", "categoria": "ACESSÓRIOS", "produto": "ÁLCOOL GEL (BARRICA)", "unidade": "UNIDADE", "preco": null}, {"codigo": "A002", "categoria": "ACESSÓRIOS", "produto": "CANUDO BIODEGRADÁVEL", "unidade": "PAC 100UN", "preco": null}, {"codigo": "A003", "categoria": "ACESSÓRIOS", "produto": "CANUDO CAIPIRINHA/MEXEDOR BIODEGRADÁVEL", "unidade": "PAC 100UN", "preco": null}, {"codigo": "A004", "categoria": "ACESSÓRIOS", "produto": "MEXEDOR DE CAFÉ", "unidade": "PAC 240UN", "preco": null}, {"codigo": "A005", "categoria": "ACESSÓRIOS", "produto": "SACOLA PARA VIAGEM RESTAURANTE", "unidade": "UNIDADE", "preco": null}, {"codigo": "A006", "categoria": "ACESSÓRIOS", "produto": "GUARDANAPO DE PANO VERMELHO PARA VINHO", "unidade": "UNIDADE", "preco": null}, {"codigo": "A007", "categoria": "ACESSÓRIOS", "produto": "AUTO SECANTE LAVA LOUÇAS B2S", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A008", "categoria": "ACESSÓRIOS", "produto": "LIMPADOR MULTENSOATIVO", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A009", "categoria": "ACESSÓRIOS", "produto": "BUCHA DUPLA FACE MULTIUSO SUPERPRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "L001", "categoria": "LIMPEZA", "produto": "ÁLCOOL LÍQUIDO 70%", "unidade": "LITRO", "preco": null}, {"codigo": "L002", "categoria": "LIMPEZA", "produto": "ALVEJANTE / ÁGUA SANITÁRIA", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "L003", "categoria": "LIMPEZA", "produto": "AROMATIZADOR", "unidade": "250ML", "preco": null}, {"codigo": "L004", "categoria": "LIMPEZA", "produto": "ENZIMA P/ LIMPAR CAIXA DE GORDURA", "unidade": "KG", "preco": null}, {"codigo": "L005", "categoria": "LIMPEZA", "produto": "FIBRAÇO", "unidade": "UNIDADE", "preco": null}, {"codigo": "L006", "categoria": "LIMPEZA", "produto": "GUARDANAPO ENSACADO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "L007", "categoria": "LIMPEZA", "produto": "GUARDANAPO DE PAPEL DE MESA 30X30", "unidade": "CAIXA", "preco": null}, {"codigo": "L008", "categoria": "LIMPEZA", "produto": "LÃ DE AÇO", "unidade": "PACOTE", "preco": null}, {"codigo": "L009", "categoria": "LIMPEZA", "produto": "LIMPA ALUMÍNIO INCOLOR", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "L010", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA P", "unidade": "PAR", "preco": null}, {"codigo": "L011", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA M", "unidade": "PAR", "preco": null}, {"codigo": "L012", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA G", "unidade": "PAR", "preco": null}, {"codigo": "L013", "categoria": "LIMPEZA", "produto": "LUVAS DESCARTÁVEIS DE VINIL G", "unidade": "CAIXA", "preco": null}, {"codigo": "L014", "categoria": "LIMPEZA", "produto": "TOUCAS DESCARTÁVEIS", "unidade": "PAC 100UN", "preco": null}, {"codigo": "F001", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER DET ULTRA", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F002", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER FREE CL", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F003", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER ATACK", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F004", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER OXY QUAT", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F005", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER GREEN", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F006", "categoria": "LIMPEZA - FIBRA SHP", "produto": "ALLUMINUM", "unidade": "UNIDADE", "preco": null}, {"codigo": "F007", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER KITCHEN", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F008", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SAQUINHO DESCARTE ABSORVENTE", "unidade": "UNIDADE", "preco": null}, {"codigo": "F009", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT HIGIENIZADOR ASSENTO SANITÁRIO", "unidade": "UNIDADE", "preco": null}, {"codigo": "F010", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT SPRAY ANTISSÉPTICO 300ML (ÁLCOOL 70%)", "unidade": "UNIDADE", "preco": null}, {"codigo": "F011", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT PURE FOAM 800ML (SABONETE BACTERICIDA)", "unidade": "UNIDADE", "preco": null}, {"codigo": "F012", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT SPRAY USO GERAL 400ML", "unidade": "UNIDADE", "preco": null}, {"codigo": "F013", "categoria": "LIMPEZA - FIBRA SHP", "produto": "NEVE PAPEL HIGIÊNICO CAI CAI FD", "unidade": "CAIXA", "preco": null}, {"codigo": "F014", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT ESSENTIAL PAPEL HIGIÊNICO 250M ROLÃO", "unidade": "UNIDADE", "preco": null}, {"codigo": "F015", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT PAPEL TOALHA BOBINA FS", "unidade": "CAIXA", "preco": null}, {"codigo": "F016", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT ESSENTIAL PAPEL TOALHA INTERFOLHADA", "unidade": "CAIXA", "preco": null}, {"codigo": "F017", "categoria": "LIMPEZA - FIBRA SHP", "produto": "ANTISSÉPTICO BUCAL", "unidade": "UNIDADE", "preco": null}, {"codigo": "F018", "categoria": "LIMPEZA - FIBRA SHP", "produto": "PASTILHA LIMPEZA RATIONAL VERDE", "unidade": "BALDE", "preco": null}, {"codigo": "F019", "categoria": "LIMPEZA - FIBRA SHP", "produto": "PASTILHA LIMPEZA RATIONAL AZUL", "unidade": "BALDE", "preco": null}, {"codigo": "F020", "categoria": "LIMPEZA - FIBRA SHP", "produto": "FIO DENTAL", "unidade": "UNIDADE", "preco": null}, {"codigo": "F021", "categoria": "LIMPEZA - FIBRA SHP", "produto": "BOBINA SACO M", "unidade": "ROLO", "preco": null}, {"codigo": "F022", "categoria": "LIMPEZA - FIBRA SHP", "produto": "BOBINA SACO G", "unidade": "ROLO", "preco": null}, {"codigo": "A010", "categoria": "ACESSÓRIOS", "produto": "PALITO DE DENTE SACHÊ", "unidade": "CAIXA", "preco": null}, {"codigo": "A011", "categoria": "ACESSÓRIOS", "produto": "PANO DE CHÃO XADREZ", "unidade": "UNIDADE", "preco": null}, {"codigo": "A012", "categoria": "ACESSÓRIOS", "produto": "PANO BRANCO GARÇOM/COZINHA", "unidade": "UNIDADE", "preco": null}, {"codigo": "A013", "categoria": "ACESSÓRIOS", "produto": "PAPEL HIGIÊNICO FOLHA DUPLA COLABORADORES", "unidade": "ROLO", "preco": null}, {"codigo": "A014", "categoria": "ACESSÓRIOS", "produto": "PAPEL HIGIÊNICO INTERFOLHA EXTRA LUXO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "A015", "categoria": "ACESSÓRIOS", "produto": "PAPEL TOALHA INTERFOLHA EXTRA LUXO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "A016", "categoria": "ACESSÓRIOS", "produto": "PERFLEX", "unidade": "UNIDADE", "preco": null}, {"codigo": "A017", "categoria": "ACESSÓRIOS", "produto": "ROLO PANO MULTIUSO BRANCO 28X40 (600UN)", "unidade": "ROLO", "preco": null}, {"codigo": "A018", "categoria": "ACESSÓRIOS", "produto": "BOBINA PVC", "unidade": "ROLO", "preco": null}, {"codigo": "A019", "categoria": "ACESSÓRIOS", "produto": "SABONETE LÍQUIDO PERFUMADO ERVA DOCE", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A020", "categoria": "ACESSÓRIOS", "produto": "SACO DE LIXO 100L REFORÇADO", "unidade": "PACOTE 5KG", "preco": null}, {"codigo": "A021", "categoria": "ACESSÓRIOS", "produto": "SACOS TRANSPARENTES 30X40", "unidade": "PACOTE", "preco": null}, {"codigo": "A022", "categoria": "ACESSÓRIOS", "produto": "SACOS TRANSPARENTES 50X70", "unidade": "PACOTE", "preco": null}, {"codigo": "A023", "categoria": "ACESSÓRIOS", "produto": "SAPÓLIO LÍQUIDO", "unidade": "EMBALAGEM 250ML", "preco": null}, {"codigo": "A024", "categoria": "ACESSÓRIOS", "produto": "SACOLA PARA TRANSPORTAR VINHO", "unidade": "UNIDADE", "preco": null}, {"codigo": "A025", "categoria": "ACESSÓRIOS", "produto": "DISPENSER DE ÁLCOOL EM GEL", "unidade": "UNIDADE", "preco": null}, {"codigo": "A026", "categoria": "ACESSÓRIOS", "produto": "LUVA DE NITRILO G PRETA", "unidade": "CAIXA", "preco": null}], "tomahawk_seca": [{"codigo": "S001", "categoria": "SECOS E DURADOUROS", "produto": "AÇÚCAR REFINADO", "unidade": "KG", "preco": null}, {"codigo": "S002", "categoria": "SECOS E DURADOUROS", "produto": "MOLHO DE TOMATE", "unidade": "UNIDADE", "preco": null}, {"codigo": "S003", "categoria": "SECOS E DURADOUROS", "produto": "ARROZ ARBÓREO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S004", "categoria": "SECOS E DURADOUROS", "produto": "ARROZ BRANCO", "unidade": "UNIDADE 5KG", "preco": null}, {"codigo": "S005", "categoria": "SECOS E DURADOUROS", "produto": "AZEITE YBARRA", "unidade": "UNIDADE 5L", "preco": null}, {"codigo": "S006", "categoria": "SECOS E DURADOUROS", "produto": "CACHAÇA VELHO BARREIRO", "unidade": "UNIDADE 1L", "preco": null}, {"codigo": "S007", "categoria": "SECOS E DURADOUROS", "produto": "CHOCOLATE AMARGO SICAO GOTAS", "unidade": "UNIDADE 2KG", "preco": null}, {"codigo": "S008", "categoria": "SECOS E DURADOUROS", "produto": "CREME DE LEITE ITALAC", "unidade": "LITRO", "preco": null}, {"codigo": "S009", "categoria": "SECOS E DURADOUROS", "produto": "FARINHA PANKO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S010", "categoria": "SECOS E DURADOUROS", "produto": "FARINHA TRIGO", "unidade": "UNIDADE 5KG", "preco": null}, {"codigo": "S011", "categoria": "SECOS E DURADOUROS", "produto": "FAROFA PRONTA YOKI", "unidade": "UNIDADE", "preco": null}, {"codigo": "S012", "categoria": "SECOS E DURADOUROS", "produto": "FEIJÃO CARIOCA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S013", "categoria": "SECOS E DURADOUROS", "produto": "FUNGHI SECO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S014", "categoria": "SECOS E DURADOUROS", "produto": "GELEIA DE PIMENTA VIDRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "S015", "categoria": "SECOS E DURADOUROS", "produto": "LEITE INTEGRAL", "unidade": "LITRO", "preco": null}, {"codigo": "S016", "categoria": "SECOS E DURADOUROS", "produto": "MAIONESE HELLMANN'S", "unidade": "UNIDADE 3KG", "preco": null}, {"codigo": "S017", "categoria": "SECOS E DURADOUROS", "produto": "MARSHMALLOW BRANCO", "unidade": "CAIXA", "preco": null}, {"codigo": "S018", "categoria": "SECOS E DURADOUROS", "produto": "MEL DE ABELHA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S019", "categoria": "SECOS E DURADOUROS", "produto": "MISTURA LÁCTEA LIMONADA SUÍÇA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S020", "categoria": "SECOS E DURADOUROS", "produto": "MOLHO INGLÊS", "unidade": "VIDRO 250ML", "preco": null}, {"codigo": "S021", "categoria": "SECOS E DURADOUROS", "produto": "MOSTARDA AMARELA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S022", "categoria": "SECOS E DURADOUROS", "produto": "ÓLEO DE GIRASSOL", "unidade": "UNIDADE 900ML", "preco": null}, {"codigo": "S023", "categoria": "SECOS E DURADOUROS", "produto": "POTE PARA PUDIM PEQUENO", "unidade": "PACOTE", "preco": null}, {"codigo": "S024", "categoria": "SECOS E DURADOUROS", "produto": "POTE PARA PUDIM GRANDE", "unidade": "PACOTE", "preco": null}, {"codigo": "S025", "categoria": "SECOS E DURADOUROS", "produto": "REDUÇÃO BALSÂMICO", "unidade": "UNIDADE 250ML", "preco": null}, {"codigo": "S026", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ AÇÚCAR UNIÃO", "unidade": "CAIXA", "preco": null}, {"codigo": "S027", "categoria": "SECOS E DURADOUROS", "produto": "SACHÊ ADOÇANTE", "unidade": "CAIXA", "preco": null}, {"codigo": "S028", "categoria": "SECOS E DURADOUROS", "produto": "SAL GROSSO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S029", "categoria": "SECOS E DURADOUROS", "produto": "SAL PARRILA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S030", "categoria": "SECOS E DURADOUROS", "produto": "SAL REFINADO", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S031", "categoria": "SECOS E DURADOUROS", "produto": "SUSPIRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "S032", "categoria": "SECOS E DURADOUROS", "produto": "TABASCO VIDRO CONVIDADOS", "unidade": "UNIDADE", "preco": null}, {"codigo": "S033", "categoria": "SECOS E DURADOUROS", "produto": "TAPIOCA GRANULADA", "unidade": "UNIDADE 1KG", "preco": null}, {"codigo": "S034", "categoria": "SECOS E DURADOUROS", "produto": "TOMATE PELADO", "unidade": "LATA 400G", "preco": null}, {"codigo": "S035", "categoria": "SECOS E DURADOUROS", "produto": "TOMATE SECO", "unidade": "BALDE", "preco": null}, {"codigo": "S036", "categoria": "SECOS E DURADOUROS", "produto": "VINAGRE ÁLCOOL", "unidade": "UNIDADE 750ML", "preco": null}, {"codigo": "S037", "categoria": "SECOS E DURADOUROS", "produto": "VINAGRE BALSÂMICO", "unidade": "UNIDADE 500ML", "preco": null}, {"codigo": "S038", "categoria": "SECOS E DURADOUROS", "produto": "PÓ DE CAFÉ PARA COLABORADOR", "unidade": "UNIDADE", "preco": null}, {"codigo": "S039", "categoria": "SECOS E DURADOUROS", "produto": "MARMITA PARA VIAGEM", "unidade": "CAIXA", "preco": null}, {"codigo": "S040", "categoria": "SECOS E DURADOUROS", "produto": "BATATA PALHA", "unidade": "UNIDADE", "preco": null}, {"codigo": "S041", "categoria": "SECOS E DURADOUROS", "produto": "CALDO DE LEGUMES", "unidade": "KG", "preco": null}, {"codigo": "A001", "categoria": "ACESSÓRIOS", "produto": "ÁLCOOL GEL (BARRICA)", "unidade": "UNIDADE", "preco": null}, {"codigo": "A002", "categoria": "ACESSÓRIOS", "produto": "CANUDO BIODEGRADÁVEL", "unidade": "PAC 100UN", "preco": null}, {"codigo": "A003", "categoria": "ACESSÓRIOS", "produto": "CANUDO CAIPIRINHA/MEXEDOR BIODEGRADÁVEL", "unidade": "PAC 100UN", "preco": null}, {"codigo": "A004", "categoria": "ACESSÓRIOS", "produto": "MEXEDOR DE CAFÉ", "unidade": "PAC 240UN", "preco": null}, {"codigo": "A005", "categoria": "ACESSÓRIOS", "produto": "SACOLA PARA VIAGEM RESTAURANTE", "unidade": "UNIDADE", "preco": null}, {"codigo": "A006", "categoria": "ACESSÓRIOS", "produto": "GUARDANAPO DE PANO VERMELHO PARA VINHO", "unidade": "UNIDADE", "preco": null}, {"codigo": "A007", "categoria": "ACESSÓRIOS", "produto": "AUTO SECANTE LAVA LOUÇAS B2S", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A008", "categoria": "ACESSÓRIOS", "produto": "LIMPADOR MULTENSOATIVO", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A009", "categoria": "ACESSÓRIOS", "produto": "BUCHA DUPLA FACE MULTIUSO SUPERPRO", "unidade": "UNIDADE", "preco": null}, {"codigo": "L001", "categoria": "LIMPEZA", "produto": "ÁLCOOL LÍQUIDO 70%", "unidade": "LITRO", "preco": null}, {"codigo": "L002", "categoria": "LIMPEZA", "produto": "ALVEJANTE / ÁGUA SANITÁRIA", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "L003", "categoria": "LIMPEZA", "produto": "AROMATIZADOR", "unidade": "250ML", "preco": null}, {"codigo": "L004", "categoria": "LIMPEZA", "produto": "ENZIMA P/ LIMPAR CAIXA DE GORDURA", "unidade": "KG", "preco": null}, {"codigo": "L005", "categoria": "LIMPEZA", "produto": "FIBRAÇO", "unidade": "UNIDADE", "preco": null}, {"codigo": "L006", "categoria": "LIMPEZA", "produto": "GUARDANAPO ENSACADO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "L007", "categoria": "LIMPEZA", "produto": "GUARDANAPO DE PAPEL DE MESA 30X30", "unidade": "CAIXA", "preco": null}, {"codigo": "L008", "categoria": "LIMPEZA", "produto": "LÃ DE AÇO", "unidade": "PACOTE", "preco": null}, {"codigo": "L009", "categoria": "LIMPEZA", "produto": "LIMPA ALUMÍNIO INCOLOR", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "L010", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA P", "unidade": "PAR", "preco": null}, {"codigo": "L011", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA M", "unidade": "PAR", "preco": null}, {"codigo": "L012", "categoria": "LIMPEZA", "produto": "LUVAS DE BORRACHA COZINHA G", "unidade": "PAR", "preco": null}, {"codigo": "L013", "categoria": "LIMPEZA", "produto": "LUVAS DESCARTÁVEIS DE VINIL G", "unidade": "CAIXA", "preco": null}, {"codigo": "L014", "categoria": "LIMPEZA", "produto": "TOUCAS DESCARTÁVEIS", "unidade": "PAC 100UN", "preco": null}, {"codigo": "F001", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER DET ULTRA", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F002", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER FREE CL", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F003", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER ATACK", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F004", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER OXY QUAT", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F005", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER GREEN", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F006", "categoria": "LIMPEZA - FIBRA SHP", "produto": "ALLUMINUM", "unidade": "UNIDADE", "preco": null}, {"codigo": "F007", "categoria": "LIMPEZA - FIBRA SHP", "produto": "MASTER KITCHEN", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "F008", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SAQUINHO DESCARTE ABSORVENTE", "unidade": "UNIDADE", "preco": null}, {"codigo": "F009", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT HIGIENIZADOR ASSENTO SANITÁRIO", "unidade": "UNIDADE", "preco": null}, {"codigo": "F010", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT SPRAY ANTISSÉPTICO 300ML (ÁLCOOL 70%)", "unidade": "UNIDADE", "preco": null}, {"codigo": "F011", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT PURE FOAM 800ML (SABONETE BACTERICIDA)", "unidade": "UNIDADE", "preco": null}, {"codigo": "F012", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT SPRAY USO GERAL 400ML", "unidade": "UNIDADE", "preco": null}, {"codigo": "F013", "categoria": "LIMPEZA - FIBRA SHP", "produto": "NEVE PAPEL HIGIÊNICO CAI CAI FD", "unidade": "CAIXA", "preco": null}, {"codigo": "F014", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT ESSENTIAL PAPEL HIGIÊNICO 250M ROLÃO", "unidade": "UNIDADE", "preco": null}, {"codigo": "F015", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT PAPEL TOALHA BOBINA FS", "unidade": "CAIXA", "preco": null}, {"codigo": "F016", "categoria": "LIMPEZA - FIBRA SHP", "produto": "SCOTT ESSENTIAL PAPEL TOALHA INTERFOLHADA", "unidade": "CAIXA", "preco": null}, {"codigo": "F017", "categoria": "LIMPEZA - FIBRA SHP", "produto": "ANTISSÉPTICO BUCAL", "unidade": "UNIDADE", "preco": null}, {"codigo": "F018", "categoria": "LIMPEZA - FIBRA SHP", "produto": "PASTILHA LIMPEZA RATIONAL VERDE", "unidade": "BALDE", "preco": null}, {"codigo": "F019", "categoria": "LIMPEZA - FIBRA SHP", "produto": "PASTILHA LIMPEZA RATIONAL AZUL", "unidade": "BALDE", "preco": null}, {"codigo": "F020", "categoria": "LIMPEZA - FIBRA SHP", "produto": "FIO DENTAL", "unidade": "UNIDADE", "preco": null}, {"codigo": "F021", "categoria": "LIMPEZA - FIBRA SHP", "produto": "BOBINA SACO M", "unidade": "ROLO", "preco": null}, {"codigo": "F022", "categoria": "LIMPEZA - FIBRA SHP", "produto": "BOBINA SACO G", "unidade": "ROLO", "preco": null}, {"codigo": "A010", "categoria": "ACESSÓRIOS", "produto": "PALITO DE DENTE SACHÊ", "unidade": "CAIXA", "preco": null}, {"codigo": "A011", "categoria": "ACESSÓRIOS", "produto": "PANO DE CHÃO XADREZ", "unidade": "UNIDADE", "preco": null}, {"codigo": "A012", "categoria": "ACESSÓRIOS", "produto": "PANO BRANCO GARÇOM/COZINHA", "unidade": "UNIDADE", "preco": null}, {"codigo": "A013", "categoria": "ACESSÓRIOS", "produto": "PAPEL HIGIÊNICO FOLHA DUPLA COLABORADORES", "unidade": "ROLO", "preco": null}, {"codigo": "A014", "categoria": "ACESSÓRIOS", "produto": "PAPEL HIGIÊNICO INTERFOLHA EXTRA LUXO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "A015", "categoria": "ACESSÓRIOS", "produto": "PAPEL TOALHA INTERFOLHA EXTRA LUXO CONVIDADOS", "unidade": "CAIXA", "preco": null}, {"codigo": "A016", "categoria": "ACESSÓRIOS", "produto": "PERFLEX", "unidade": "UNIDADE", "preco": null}, {"codigo": "A017", "categoria": "ACESSÓRIOS", "produto": "ROLO PANO MULTIUSO BRANCO 28X40 (600UN)", "unidade": "ROLO", "preco": null}, {"codigo": "A018", "categoria": "ACESSÓRIOS", "produto": "BOBINA PVC", "unidade": "ROLO", "preco": null}, {"codigo": "A019", "categoria": "ACESSÓRIOS", "produto": "SABONETE LÍQUIDO PERFUMADO ERVA DOCE", "unidade": "EMBALAGEM 5L", "preco": null}, {"codigo": "A020", "categoria": "ACESSÓRIOS", "produto": "SACO DE LIXO 100L REFORÇADO", "unidade": "PACOTE 5KG", "preco": null}, {"codigo": "A021", "categoria": "ACESSÓRIOS", "produto": "SACOS TRANSPARENTES 30X40", "unidade": "PACOTE", "preco": null}, {"codigo": "A022", "categoria": "ACESSÓRIOS", "produto": "SACOS TRANSPARENTES 50X70", "unidade": "PACOTE", "preco": null}, {"codigo": "A023", "categoria": "ACESSÓRIOS", "produto": "SAPÓLIO LÍQUIDO", "unidade": "EMBALAGEM 250ML", "preco": null}, {"codigo": "A024", "categoria": "ACESSÓRIOS", "produto": "SACOLA PARA TRANSPORTAR VINHO", "unidade": "UNIDADE", "preco": null}, {"codigo": "A025", "categoria": "ACESSÓRIOS", "produto": "DISPENSER DE ÁLCOOL EM GEL", "unidade": "UNIDADE", "preco": null}, {"codigo": "A026", "categoria": "ACESSÓRIOS", "produto": "LUVA DE NITRILO G PRETA", "unidade": "CAIXA", "preco": null}]};
+
+// ── CONSUMO PADRAO ──────────────────────────────────────────────
+// fatorUnit = gramas por unidade do item (1000 para kg, peso do bag em g, etc.)
+var CONSUMO = {
+  'F001':  { gPorPessoa: 120, fatorUnit: 5000 },  // FONDUE QUEIJO SUAVE - bag 5kg
+  'F003':  { gPorPessoa: 130, fatorUnit: 5000 },  // FONDUE CHOCOLATE - bag 5kg
+  'F004':  { gPorPessoa: 130, fatorUnit: 5000 },  // FONDUE LEITE NINHO - bag 5kg
+  'F005':  { gPorPessoa: 130, fatorUnit: 5000 },  // FONDUE DOCE DE LEITE - bag 5kg
+  'CI001': { gPorPessoa: 100, fatorUnit: 450  },  // BAGUETTE ITALIANA - Und ~450g
+  'CE007': { gPorPessoa: 30,  fatorUnit: 1000 },  // Cenoura - kg
+  'CE017': { gPorPessoa: 70,  fatorUnit: 1000 },  // Batata Bolinha - kg
+  'CI003': { gPorPessoa: 70,  fatorUnit: 1000 },  // CHICKEN SUPREME - Pct ~1kg
+  'CE015': { gPorPessoa: 70,  fatorUnit: 1000 },  // Uva Thompson Verde - kg
+  'CE013': { gPorPessoa: 100, fatorUnit: 1000 },  // Morango - kg
+  'SD021': { gPorPessoa: 50,  fatorUnit: 1000 },  // MARSHMALLOW BRANCO - CAIXA ~1kg
+  'CE001': { gPorPessoa: 70,  fatorUnit: 1000 },  // Banana Prata - kg
+  'C002':  { gPorPessoa: 50,  fatorUnit: 2000 },  // BROWNIE - bag 2kg
+  'C001':  { gPorPessoa: 50,  fatorUnit: 2000 },  // BOLO DE BANANA - bag 2kg
+  'SD018': { gPorPessoa: 25,  fatorUnit: 350  },  // BIJU CROCANTE CANUDO - CAIXA 350g
+  'CE022': { gPorPessoa: 25,  fatorUnit: 1000 }   // Tangerina - kg
+};
+
+// BROCOLIS: match por nome (nao tem codigo fixo no catalogo)
+var CONSUMO_BROCOLIS = { gPorPessoa: 40, fatorUnit: 1000 };
+
+function getConsumoForItem(item) {
+  if (CONSUMO[item.codigo]) return CONSUMO[item.codigo];
+  if (item.produto && item.produto.toUpperCase().indexOf('BROC') >= 0) return CONSUMO_BROCOLIS;
+  return null;
+}
+
+// ── CATEGORIAS POR CADEIA ──────────────────────────────────────
+var CATS_FRIA = [
+  'Molhos Fondue Carne','Manteigas Aromaticas','Confeitaria','Antepastos/Consome',
+  'Fondues','Queijos','Congelados Manipulados','Congelados Industrializados',
+  'Refrigerados Industrializados','MANIPULADOS','REFRIGERADOS','CONGELADOS','PAES',
+  'Manteigas Arom\u00e1ticas','Antepastos/Consom\u00ea','P\u00c3ES'
+];
+var CATS_SECA = [
+  'CEASA','SECOS E DURADOUROS','BEBIDAS GERAIS','VINHO','DESCARTAVEIS','LIMPEZA',
+  'LIMPEZA - FIBRA SHP','UNIFORME','UTENSILIOS','BAR','COZINHA','SALAO','PAPELARIA',
+  'FONDUE','ACESSORIOS','ALIMENTACAO COLABORADORES','Alimenta\u00e7\u00e3o Colaboradores',
+  'ALIMENTA\u00c7\u00c3O COLABORADORES','UTENS\u00cdLIOS','SAL\u00c3O','ACESS\u00d3RIOS'
+];
+
+var UNIDADES_FONDUE = ['Moema', 'Perdizes', 'Tatuape'];
+
+function getRoute(categoria) {
+  var i;
+  for (i = 0; i < CATS_FRIA.length; i++) {
+    if (CATS_FRIA[i].toUpperCase() === categoria.toUpperCase()) return 'fria';
+  }
+  return 'seca';
+}
+
+// ── SESSION ───────────────────────────────────────────────────
+var session = JSON.parse(sessionStorage.getItem('han_user') || 'null');
+if (!session) { window.location.href = 'login.html'; }
+if (!session.acesso || session.acesso.indexOf('pedidos') < 0) { window.location.href = 'dashboard.html'; }
+
+var USER = session;
+var isFondueUnit = (UNIDADES_FONDUE.indexOf(USER.unidade) >= 0);
+
+document.getElementById('navUnidade').textContent = USER.unidade || USER.login;
+document.getElementById('metaSolicitante').value = USER.login;
+if (USER.perfil === 'admin' || USER.perfil === 'cd' || USER.perfil === 'cozinha') {
+  document.getElementById('btnDash').style.display = 'inline-block';
+}
+
+// Default delivery date = tomorrow
+var tmr = new Date(); tmr.setDate(tmr.getDate() + 1);
+document.getElementById('metaDataEntrega').value = tmr.toISOString().split('T')[0];
+
+// Show consumo section for fondue units
+if (isFondueUnit) {
+  document.getElementById('consumoSection').style.display = 'block';
+  document.getElementById('lockHint').style.display = 'block';
+  document.getElementById('orderMeta').style.opacity = '0.5';
+  document.getElementById('orderMeta').style.pointerEvents = 'none';
+  document.getElementById('searchWrap').style.opacity = '0.4';
+  document.getElementById('searchWrap').style.pointerEvents = 'none';
+  document.getElementById('itemsList').style.opacity = '0.4';
+  document.getElementById('itemsList').style.pointerEvents = 'none';
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+var cart = {};
+var estoques = {};     // { codigo: estoqueAtual }
+var activeCategory = null;
+var turno = null;
+var numeroPessoas = 0;
+var lastPedido = null;
+
+// ── CATALOG FILTER ────────────────────────────────────────────
+function getCatalog() {
+  var u = USER.unidade;
+  if (u === 'Hamburgo & Fries')  return [].concat(CATALOGO_DATA.manipulados_ht, CATALOGO_DATA.hamburgo_seca);
+  if (u === 'Tomahawk')          return [].concat(CATALOGO_DATA.manipulados_ht, CATALOGO_DATA.tomahawk_seca);
+  if (u === 'Centro de Distribuicao' || u === 'Cozinha Central') return CATALOGO_DATA.aletas;
+  // Moema, Perdizes, Tatuape -> aletas filtrado
+  var allowed = [
+    'Molhos Fondue Carne','Manteigas Arom\u00e1ticas','Confeitaria','Antepastos/Consom\u00ea',
+    'Fondues','Queijos','Congelados Manipulados','Congelados Industrializados',
+    'Refrigerados Industrializados','CEASA','SECOS E DURADOUROS','BEBIDAS GERAIS',
+    'VINHO','DESCARTAVEIS','LIMPEZA','Alimenta\u00e7\u00e3o Colaboradores','ALIMENTA\u00c7\u00c3O COLABORADORES'
+  ];
+  return CATALOGO_DATA.aletas.filter(function(x) {
+    for (var i = 0; i < allowed.length; i++) {
+      if (allowed[i].toUpperCase() === x.categoria.toUpperCase()) return true;
+    }
+    return false;
+  });
+}
+
+var catalog = getCatalog();
+
+// ── TURNO / CONSUMO LOGIC ─────────────────────────────────────
+function setTurno(t) {
+  turno = t;
+  document.getElementById('btnAlmoco').className = 'turno-btn' + (t === 'almoco' ? ' active' : '');
+  document.getElementById('btnJantar').className = 'turno-btn' + (t === 'jantar' ? ' active' : '');
+  checkCatalogLock();
+  renderItems();
+}
+
+function onPessoasChange() {
+  numeroPessoas = parseInt(document.getElementById('numeroPessoas').value) || 0;
+  checkCatalogLock();
+  renderItems();
+}
+
+function checkCatalogLock() {
+  if (!isFondueUnit) return;
+  var unlocked = (turno !== null && numeroPessoas > 0);
+  document.getElementById('lockHint').style.display = unlocked ? 'none' : 'block';
+  var opacity = unlocked ? '1' : '0.4';
+  var pe = unlocked ? 'auto' : 'none';
+  document.getElementById('orderMeta').style.opacity = opacity;
+  document.getElementById('orderMeta').style.pointerEvents = pe;
+  document.getElementById('searchWrap').style.opacity = opacity;
+  document.getElementById('searchWrap').style.pointerEvents = pe;
+  document.getElementById('itemsList').style.opacity = opacity;
+  document.getElementById('itemsList').style.pointerEvents = pe;
+}
+
+function getConsumoStatus(item) {
+  var c = getConsumoForItem(item);
+  if (!c || !numeroPessoas) return null;
+  var rec = Math.ceil(numeroPessoas * c.gPorPessoa / c.fatorUnit);
+  var estoque = parseFloat(estoques[item.codigo]) || 0;
+  var pedido = cart[item.codigo] || 0;
+  var total = pedido + estoque;
+  var status;
+  if (total < rec)           status = 'insuficiente';
+  else if (total <= rec * 1.2) status = 'ok';
+  else                       status = 'excesso';
+  return { rec: rec, estoque: estoque, pedido: pedido, total: total, status: status };
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────
+function buildSidebar() {
+  var el = document.getElementById('catList');
+  el.innerHTML = '';
+  var categories = [];
+  catalog.forEach(function(x) { if (categories.indexOf(x.categoria) < 0) categories.push(x.categoria); });
+
+  var allBtn = document.createElement('button');
+  allBtn.className = 'cat-btn' + (activeCategory === null ? ' active' : '');
+  allBtn.innerHTML = 'Todos <span class="cat-count">' + catalog.length + '</span>';
+  allBtn.onclick = function() { activeCategory = null; buildSidebar(); renderItems(); };
+  el.appendChild(allBtn);
+
+  categories.forEach(function(cat) {
+    var count = catalog.filter(function(x) { return x.categoria === cat; }).length;
+    var route = getRoute(cat);
+    var btn = document.createElement('button');
+    btn.className = 'cat-btn' + (activeCategory === cat ? ' active' : '');
+    var dot = '<span class="route-dot route-' + route + '"></span>';
+    btn.innerHTML = dot + cat + ' <span class="cat-count">' + count + '</span>';
+    btn.onclick = (function(c) { return function() { activeCategory = c; buildSidebar(); renderItems(); }; })(cat);
+    el.appendChild(btn);
+  });
+}
+
+// ── RENDER ITEMS ──────────────────────────────────────────────
+function renderItems() {
+  var search = document.getElementById('searchInput').value.toLowerCase().trim();
+  var items = activeCategory ? catalog.filter(function(x) { return x.categoria === activeCategory; }) : catalog;
+  if (search) {
+    items = items.filter(function(x) {
+      return x.produto.toLowerCase().indexOf(search) >= 0 || x.codigo.toLowerCase().indexOf(search) >= 0;
+    });
+  }
+
+  var el = document.getElementById('itemsList');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#128269;</div><p>Nenhum item encontrado.</p></div>';
+    return;
+  }
+
+  var grouped = {};
+  var groupOrder = [];
+  items.forEach(function(x) {
+    if (!grouped[x.categoria]) { grouped[x.categoria] = []; groupOrder.push(x.categoria); }
+    grouped[x.categoria].push(x);
+  });
+
+  el.innerHTML = '';
+  groupOrder.forEach(function(cat) {
+    var route = getRoute(cat);
+    var section = document.createElement('div');
+    section.className = 'cat-section';
+
+    var routeLabel = route === 'fria' ? 'Cadeia Fria' : 'Cadeia Seca';
+    var routePerson = route === 'fria' ? 'Matheus' : 'Miguel';
+    var titleDiv = document.createElement('div');
+    titleDiv.className = 'cat-section-title';
+    titleDiv.innerHTML = '<span>' + cat + '</span><span class="route-tag route-tag-' + route + '">' + routeLabel + ' \u2192 ' + routePerson + '</span>';
+    section.appendChild(titleDiv);
+
+    grouped[cat].forEach(function(item) {
+      var qty = cart[item.codigo] || 0;
+      var row = document.createElement('div');
+      row.className = 'item-row' + (qty > 0 ? ' has-qty' : '');
+      row.id = 'row-' + item.codigo;
+
+      var precoFmt = (item.preco !== null && item.preco !== undefined) ? 'R$ ' + item.preco.toFixed(2).replace('.', ',') : '\u2014';
+
+      var mainRow = document.createElement('div');
+      mainRow.className = 'item-main-row';
+
+      var infoDiv = document.createElement('div');
+      var nameDiv = document.createElement('div');
+      nameDiv.className = 'item-name';
+      nameDiv.textContent = item.produto;
+      var codDiv = document.createElement('div');
+      codDiv.className = 'item-cod';
+      codDiv.textContent = item.codigo + ' \u00b7 ' + item.unidade;
+      infoDiv.appendChild(nameDiv);
+      infoDiv.appendChild(codDiv);
+
+      var precoDiv = document.createElement('div');
+      precoDiv.className = 'item-preco';
+      precoDiv.textContent = precoFmt;
+
+      var qtyWrap = document.createElement('div');
+      qtyWrap.className = 'qty-wrap';
+      var btnM = document.createElement('button');
+      btnM.className = 'qty-btn';
+      btnM.textContent = '\u2212';
+      btnM.onclick = (function(cod) { return function() { changeQty(cod, -1); }; })(item.codigo);
+      var qtyInp = document.createElement('input');
+      qtyInp.className = 'qty-input';
+      qtyInp.type = 'number'; qtyInp.min = '0'; qtyInp.value = qty;
+      qtyInp.id = 'qty-' + item.codigo;
+      qtyInp.onchange = (function(cod) { return function() { setQty(cod, this.value); }; })(item.codigo);
+      qtyInp.oninput = qtyInp.onchange;
+      var btnP = document.createElement('button');
+      btnP.className = 'qty-btn';
+      btnP.textContent = '+';
+      btnP.onclick = (function(cod) { return function() { changeQty(cod, 1); }; })(item.codigo);
+      qtyWrap.appendChild(btnM);
+      qtyWrap.appendChild(qtyInp);
+      qtyWrap.appendChild(btnP);
+
+      mainRow.appendChild(infoDiv);
+      mainRow.appendChild(precoDiv);
+      mainRow.appendChild(qtyWrap);
+      row.appendChild(mainRow);
+
+      // Consumo inline (apenas para unidades fondue com pessoas preenchidas)
+      if (isFondueUnit && numeroPessoas > 0 && getConsumoForItem(item)) {
+        var cs = getConsumoStatus(item);
+        var consumoDiv = document.createElement('div');
+        consumoDiv.className = 'item-consumo';
+        consumoDiv.id = 'ci-' + item.codigo;
+
+        var recSpan = document.createElement('span');
+        recSpan.className = 'consumo-info';
+        recSpan.textContent = 'Rec: ' + cs.rec + ' ' + item.unidade;
+
+        var stockWrap = document.createElement('span');
+        stockWrap.className = 'consumo-stock-wrap';
+        stockWrap.textContent = 'Estoque: ';
+        var stockInp = document.createElement('input');
+        stockInp.className = 'stock-inp';
+        stockInp.type = 'number'; stockInp.min = '0'; stockInp.step = '0.1';
+        stockInp.value = estoques[item.codigo] || 0;
+        stockInp.onchange = (function(cod) { return function() { estoques[cod] = parseFloat(this.value) || 0; updateConsumoIndicator(cod); }; })(item.codigo);
+        stockInp.oninput = stockInp.onchange;
+        stockWrap.appendChild(stockInp);
+
+        var badgeSpan = document.createElement('span');
+        badgeSpan.id = 'badge-' + item.codigo;
+        var badgeInfo = getConsumoBadge(cs.status);
+        badgeSpan.className = 'consumo-badge ' + badgeInfo.cls;
+        badgeSpan.textContent = badgeInfo.label;
+
+        consumoDiv.appendChild(recSpan);
+        consumoDiv.appendChild(stockWrap);
+        consumoDiv.appendChild(badgeSpan);
+        row.appendChild(consumoDiv);
+      }
+
+      section.appendChild(row);
+    });
+    el.appendChild(section);
+  });
+}
+
+function getConsumoBadge(status) {
+  if (status === 'ok')           return { cls: 'badge-ok',    label: '\u25cf OK' };
+  if (status === 'excesso')      return { cls: 'badge-excesso', label: '\u26a0 Excesso' };
+  if (status === 'insuficiente') return { cls: 'badge-insuf',  label: '\u25cf Insuficiente' };
+  return { cls: 'badge-none', label: '\u2014' };
+}
+
+function updateConsumoIndicator(cod) {
+  var item = null;
+  for (var i = 0; i < catalog.length; i++) { if (catalog[i].codigo === cod) { item = catalog[i]; break; } }
+  if (!item) return;
+  var cs = getConsumoStatus(item);
+  if (!cs) return;
+  var badge = document.getElementById('badge-' + cod);
+  if (badge) {
+    var info = getConsumoBadge(cs.status);
+    badge.className = 'consumo-badge ' + info.cls;
+    badge.textContent = info.label;
+  }
+}
+
+// ── CART ─────────────────────────────────────────────────────
+function changeQty(cod, delta) {
+  var cur = cart[cod] || 0;
+  var newV = Math.max(0, cur + delta);
+  if (newV === 0) delete cart[cod]; else cart[cod] = newV;
+  var inp = document.getElementById('qty-' + cod);
+  if (inp) inp.value = newV;
+  var row = document.getElementById('row-' + cod);
+  if (row) row.className = 'item-row' + (newV > 0 ? ' has-qty' : '');
+  updateConsumoIndicator(cod);
+  updateCart();
+}
+
+function setQty(cod, val) {
+  var v = Math.max(0, parseInt(val) || 0);
+  if (v === 0) delete cart[cod]; else cart[cod] = v;
+  var row = document.getElementById('row-' + cod);
+  if (row) row.className = 'item-row' + (v > 0 ? ' has-qty' : '');
+  updateConsumoIndicator(cod);
+  updateCart();
+}
+
+function getCartItems() {
+  return Object.keys(cart).map(function(cod) {
+    var item = null;
+    for (var i = 0; i < catalog.length; i++) { if (catalog[i].codigo === cod) { item = catalog[i]; break; } }
+    if (!item) return null;
+    var qty = cart[cod];
+    var valor = (item.preco && qty) ? item.preco * qty : null;
+    var route = getRoute(item.categoria);
+    var cs = getConsumoStatus(item);
+    return {
+      codigo: item.codigo, categoria: item.categoria, produto: item.produto,
+      unidade: item.unidade, preco: item.preco || null, qty: qty, valor: valor,
+      route: route, destino: route === 'fria' ? 'matheus' : 'miguel',
+      precoUnitario: item.preco || null, valorTotal: valor,
+      estoqueAtual: estoques[item.codigo] || 0,
+      minimoRecomendado: cs ? cs.rec : null,
+      maximoRecomendado: cs ? Math.ceil(cs.rec * 1.2) : null,
+      statusEstoque: cs ? cs.status : null
+    };
+  }).filter(Boolean);
+}
+
+function updateCart() {
+  var items = getCartItems();
+  var total = items.reduce(function(s, x) { return s + (x.valor || 0); }, 0);
+  var friaItems = items.filter(function(x) { return x.route === 'fria'; });
+  var secaItems = items.filter(function(x) { return x.route === 'seca'; });
+
+  document.getElementById('cartCount').textContent = items.length + (items.length === 1 ? ' item' : ' itens');
+  document.getElementById('cartTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+
+  var splitParts = [];
+  if (friaItems.length) splitParts.push('Matheus: ' + friaItems.length + ' itens');
+  if (secaItems.length) splitParts.push('Miguel: ' + secaItems.length + ' itens');
+  document.getElementById('cartSplit').textContent = splitParts.join(' \u00b7 ');
+  document.getElementById('cartFooter').classList.toggle('visible', items.length > 0);
+}
+
+function clearCart() {
+  Object.keys(cart).forEach(function(k) { delete cart[k]; });
+  document.getElementById('searchInput').value = '';
+  renderItems();
+  updateCart();
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────
+function submitPedido() {
+  var items = getCartItems();
+  if (!items.length) { alert('Adicione itens antes de enviar.'); return; }
+
+  var dataEntrega = document.getElementById('metaDataEntrega').value;
+  if (!dataEntrega) { alert('Informe a data de entrega desejada.'); return; }
+
+  if (isFondueUnit) {
+    if (!turno) { alert('Selecione o turno antes de enviar.'); return; }
+    if (!numeroPessoas) { alert('Informe o n\u00famero de pessoas antes de enviar.'); return; }
+  }
+
+  // Verificar itens insuficientes
+  if (isFondueUnit && numeroPessoas > 0) {
+    var insufItems = items.filter(function(x) { return x.status === 'insuficiente'; });
+    if (insufItems.length) {
+      var nomes = insufItems.map(function(x) { return x.produto; }).join(', ');
+      document.getElementById('modalInsufMsg').textContent =
+        insufItems.length + ' item(s) com quantidade possivelmente insuficiente para ' + numeroPessoas + ' pessoas: ' + nomes + '. Deseja enviar assim mesmo?';
+      document.getElementById('modalInsuf').classList.add('show');
+      return;
+    }
+  }
+
+  doSubmit();
+}
+
+function confirmarSubmit() {
+  document.getElementById('modalInsuf').classList.remove('show');
+  doSubmit();
+}
+
+function doSubmit() {
+  var items = getCartItems();
+  var dataEntrega = document.getElementById('metaDataEntrega').value;
+  var total = items.reduce(function(s, x) { return s + (x.valor || 0); }, 0);
+
+  var payload = {
+    action: 'novoPedido',
+    solicitante: USER.login,
+    unidade: USER.unidade,
+    perfil: USER.perfil,
+    dataEntrega: dataEntrega,
+    turno: turno || '',
+    numeroPessoas: numeroPessoas || 0,
+    obs: document.getElementById('metaObs').value,
+    itens: items.map(function(x) {
+      return {
+        codigo: x.codigo, categoria: x.categoria, produto: x.produto,
+        unidade: x.unidade, qty: x.qty, precoUnitario: x.preco,
+        valorTotal: x.valor, destino: x.destino,
+        estoqueAtual: x.estoqueAtual, minimoRecomendado: x.minimoRecomendado, maximoRecomendado: x.maximoRecomendado, statusEstoque: x.statusEstoque
+      };
+    }),
+    totalPedido: total,
+    timestamp: new Date().toISOString()
+  };
+
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  // Gera ID único do pedido no cliente
+  var pedidoId = 'PED-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + '-' + Math.floor(Math.random()*1000);
+
+  var registro = {
+    pedido_id: pedidoId,
+    solicitante: payload.solicitante,
+    unidade: payload.unidade,
+    perfil: payload.perfil,
+    data_entrega: payload.dataEntrega,
+    turno: payload.turno || null,
+    numero_pessoas: payload.numeroPessoas || 0,
+    obs: payload.obs || '',
+    itens: payload.itens,          // JSONB — array completo, sem limite
+    total_pedido: payload.totalPedido,
+    timestamp: payload.timestamp,
+    status: 'pendente'
+  };
+
+  sbFetch('/pedidos', {
+    method: 'POST',
+    body: JSON.stringify(registro)
+  })
+  .then(function(r) {
+    if (!r.ok) return r.text().then(function(t){ throw new Error(t); });
+    return r.json();
+  })
+  .then(function() {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    lastPedido = { payload: payload, pedidoId: pedidoId };
+    showModal(payload);
+  })
+  .catch(function(err) {
+    console.error('Supabase erro:', err);
+    document.getElementById('loadingOverlay').classList.remove('show');
+    // Mesmo com erro de rede, mostra confirmação local
+    lastPedido = { payload: payload, pedidoId: pedidoId };
+    showModal(payload);
+  });
+}
+
+// ── MODAL SUCESSO ─────────────────────────────────────────────
+function showModal(payload) {
+  var items = payload.itens;
+  var fria = items.filter(function(x) { return x.destino === 'matheus'; });
+  var seca = items.filter(function(x) { return x.destino === 'miguel'; });
+
+  var subText = (payload.unidade || '') + ' \u00b7 Entrega: ' + (payload.dataEntrega || '');
+  if (payload.turno) subText += ' \u00b7 ' + (payload.turno === 'almoco' ? 'Almo\u00e7o' : 'Jantar');
+  if (payload.numeroPessoas) subText += ' \u00b7 ' + payload.numeroPessoas + ' pessoas';
+  document.getElementById('modalSub').textContent = subText;
+
+  function fillTable(bodyId, list, totalId) {
+    var tbody = document.getElementById(bodyId);
+    tbody.innerHTML = '';
+    var tot = 0;
+    list.forEach(function(it) {
+      var tr = document.createElement('tr');
+      var valFmt = it.valorTotal ? 'R$ ' + it.valorTotal.toFixed(2).replace('.', ',') : '\u2014';
+      tot += it.valorTotal || 0;
+      tr.innerHTML = '<td>' + it.produto + '</td><td>' + it.qty + ' ' + it.unidade + '</td><td style="text-align:right">' + valFmt + '</td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById(totalId).textContent = 'R$ ' + tot.toFixed(2).replace('.', ',');
+  }
+
+  if (fria.length) {
+    document.getElementById('modalFriaSection').style.display = 'block';
+    fillTable('modalBodyFria', fria, 'modalTotalFria');
+  }
+  if (seca.length) {
+    document.getElementById('modalSecaSection').style.display = 'block';
+    fillTable('modalBodySeca', seca, 'modalTotalSeca');
+  }
+  document.getElementById('modalSuccess').classList.add('show');
+}
+
+function novoPedido() {
+  document.getElementById('modalSuccess').classList.remove('show');
+  document.getElementById('modalFriaSection').style.display = 'none';
+  document.getElementById('modalSecaSection').style.display = 'none';
+  document.getElementById('modalBodyFria').innerHTML = '';
+  document.getElementById('modalBodySeca').innerHTML = '';
+  clearCart();
+  document.getElementById('metaObs').value = '';
+  if (isFondueUnit) {
+    turno = null; numeroPessoas = 0;
+    document.getElementById('btnAlmoco').className = 'turno-btn';
+    document.getElementById('btnJantar').className = 'turno-btn';
+    document.getElementById('numeroPessoas').value = '';
+    checkCatalogLock();
+  }
+}
+
+// ── DOWNLOAD RESUMO ───────────────────────────────────────────
+function downloadResumo() {
+  if (!lastPedido) return;
+  var p = lastPedido.payload;
+  var items = p.itens;
+  var now = new Date().toLocaleDateString('pt-BR');
+
+  function buildRows(list) {
+    var rows = '';
+    list.forEach(function(it) {
+      var valFmt  = it.valorTotal    ? 'R$ ' + it.valorTotal.toFixed(2).replace('.', ',')    : '\u2014';
+      var unitFmt = it.precoUnitario ? 'R$ ' + it.precoUnitario.toFixed(2).replace('.', ',') : '\u2014';
+      rows += '<tr><td>' + it.codigo + '</td><td>' + it.produto + '</td><td>' + it.categoria + '</td>' +
+        '<td style="text-align:center">' + it.qty + '</td><td>' + it.unidade + '</td>' +
+        '<td style="text-align:right">' + unitFmt + '</td><td style="text-align:right">' + valFmt + '</td></tr>';
+    });
+    return rows;
+  }
+
+  var fria = items.filter(function(x) { return x.destino === 'matheus'; });
+  var seca = items.filter(function(x) { return x.destino === 'miguel'; });
+  var totalFria = fria.reduce(function(s, x) { return s + (x.valorTotal || 0); }, 0);
+  var totalSeca = seca.reduce(function(s, x) { return s + (x.valorTotal || 0); }, 0);
+  var total = totalFria + totalSeca;
+
+  var friaSection = '';
+  if (fria.length) {
+    friaSection = '<h2 style="color:#1A4A7A;border-left:4px solid #1A4A7A;padding-left:10px;margin:24px 0 12px">Cadeia Fria \u2192 Matheus</h2>' +
+      '<table><thead><tr><th>C\u00f3digo</th><th>Produto</th><th>Categoria</th><th style="text-align:center">Qtd</th><th>Unid.</th><th style="text-align:right">Pre\u00e7o Unit.</th><th style="text-align:right">Total</th></tr></thead>' +
+      '<tbody>' + buildRows(fria) + '</tbody>' +
+      '<tfoot><tr class="total-row"><td colspan="6">Subtotal Cadeia Fria</td><td style="text-align:right">R$ ' + totalFria.toFixed(2).replace('.', ',') + '</td></tr></tfoot></table>';
+  }
+  var secaSection = '';
+  if (seca.length) {
+    secaSection = '<h2 style="color:#B8600A;border-left:4px solid #B8600A;padding-left:10px;margin:24px 0 12px">Cadeia Seca \u2192 Miguel</h2>' +
+      '<table><thead><tr><th>C\u00f3digo</th><th>Produto</th><th>Categoria</th><th style="text-align:center">Qtd</th><th>Unid.</th><th style="text-align:right">Pre\u00e7o Unit.</th><th style="text-align:right">Total</th></tr></thead>' +
+      '<tbody>' + buildRows(seca) + '</tbody>' +
+      '<tfoot><tr class="total-row"><td colspan="6">Subtotal Cadeia Seca</td><td style="text-align:right">R$ ' + totalSeca.toFixed(2).replace('.', ',') + '</td></tr></tfoot></table>';
+  }
+
+  var pessoasLine = p.numeroPessoas ? '<p><strong>Pessoas:</strong> ' + p.numeroPessoas + ' \u00b7 <strong>Turno:</strong> ' + (p.turno === 'almoco' ? 'Almo\u00e7o' : 'Jantar') + '</p>' : '';
+  var obsLine = p.obs ? '<p><strong>Obs:</strong> ' + p.obs + '</p>' : '';
+
+  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Resumo Pedido Hannover</title>' +
+    '<style>body{font-family:Georgia,serif;margin:0;padding:28px;color:#2C1010;background:#FAF8F5;font-size:12px}' +
+    '.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:16px;border-bottom:3px solid #8B1A2B}' +
+    '.brand{font-size:26px;font-weight:bold;color:#1A0A0E;letter-spacing:2px}.brand-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#888;margin-top:4px}' +
+    '.meta{text-align:right;font-size:12px;line-height:1.8}.pid{font-size:15px;font-weight:bold;color:#8B1A2B}' +
+    'h2{font-size:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:20px}' +
+    'th{background:#8B1A2B;color:#F7F3EE;text-align:left;padding:8px 10px;font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase}' +
+    'td{padding:8px 10px;border-bottom:1px solid #E8E0D6}tr:nth-child(even) td{background:rgba(139,26,43,0.03)}' +
+    '.total-row td{font-weight:bold;color:#8B1A2B;font-size:13px;border-bottom:none;border-top:2px solid #8B1A2B;padding-top:10px}' +
+    '.grand-total{background:#1A0A0E;color:#F7F3EE;padding:14px 16px;border-radius:2px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}' +
+    '.footer{margin-top:32px;padding-top:14px;border-top:1px solid #E8E0D6;text-align:center;color:#aaa;font-size:10px;letter-spacing:1px}' +
+    '</style></head><body>' +
+    '<div class="header"><div><div class="brand">GRUPO HANNOVER</div><div class="brand-sub">Sistema de Pedidos Internos</div></div>' +
+    '<div class="meta"><div class="pid">' + lastPedido.pedidoId + '</div>' +
+    '<p><strong>Unidade:</strong> ' + p.unidade + '</p>' +
+    '<p><strong>Solicitante:</strong> ' + p.solicitante + '</p>' +
+    '<p><strong>Data do pedido:</strong> ' + now + '</p>' +
+    '<p><strong>Entrega desejada:</strong> ' + p.dataEntrega + '</p>' +
+    pessoasLine + obsLine + '</div></div>' +
+    friaSection + secaSection +
+    '<div class="grand-total"><span style="font-size:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase">TOTAL GERAL DO PEDIDO</span>' +
+    '<span style="font-size:20px;font-weight:bold">R$ ' + total.toFixed(2).replace('.', ',') + '</span></div>' +
+    '<div class="footer">Grupo Hannover \u00b7 Gerado em ' + new Date().toLocaleString('pt-BR') + ' \u00b7 Uso interno</div>' +
+    '</body></html>';
+
+  var blob = new Blob([html], { type: 'text/html' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  var dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = 'pedido_' + (p.unidade || 'hannover').replace(/[^a-zA-Z0-9]/g, '_') + '_' + dateStr + '.html';
+  a.click();
+}
+
+function logout() { sessionStorage.clear(); window.location.href = 'login.html'; }
+
+buildSidebar();
+renderItems();
+updateCart();
+</script>
+</body>
+</html>
