@@ -363,7 +363,7 @@ tr:hover td{background:rgba(139,26,43,0.02)}
 // ── SUPABASE CONFIG ──────────────────────────────────────────
 // Substitua pelos valores do seu projeto Supabase
 var SUPABASE_URL = 'https://qijwlgophinmscgtdpmb.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpandsZ29waGlubXNjZ3RkcG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE2NTMsImV4cCI6MjA5MTE2NzY1M30.HKrppltvS12zFglwtdNsbtBtUsui4jvBXvBJs6o82WM';
+var SUPABASE_KEY = 'sb_publishable_UWHcXTDvKfG_q2C1xPlcbw_-G26t85a';
 
 // Helper Supabase REST
 function sbFetch(path, method, body) {
@@ -862,7 +862,21 @@ function renderSolicitarCompra(mc) {
               '</select>' +
               '<input class="form-input" id="customItemRefOutro" placeholder="especifique..." style="font-size:12px;display:none;margin-top:4px">' +
             '</div>' +
-            '<div><div class="form-label">Vlr unit. (R$)</div><input class="form-input" id="customItemPreco" type="number" step="0.01" placeholder="0,00" style="font-size:12px"></div>' +
+            '<div><div class="form-label">Unidade</div>' +
+              '<select class="form-input" id="customItemPreco" style="font-size:12px">' +
+                '<option value="">Selecione...</option>' +
+                '<option value="kg">Kg</option>' +
+                '<option value="g">g</option>' +
+                '<option value="L">L</option>' +
+                '<option value="ml">ml</option>' +
+                '<option value="un">Unidade</option>' +
+                '<option value="cx">Caixa</option>' +
+                '<option value="pct">Pacote</option>' +
+                '<option value="bag">Bag</option>' +
+                '<option value="fardo">Fardo</option>' +
+                '<option value="galao">Galão</option>' +
+              '</select>' +
+            '</div>' +
             '<div><button class="btn-sm btn-outline" onclick="adicionarItemCustom()" style="width:100%;height:40px">+ Adicionar ao pedido</button></div>' +
           '</div>' +
           '<div style="font-size:11px;color:var(--muted);margin-top:8px">Itens incluídos manualmente ficam visíveis apenas neste pedido. Para adicioná-los definitivamente ao catálogo, informe o Guilherme.</div>' +
@@ -1158,7 +1172,7 @@ function adicionarItemCustom() {
   var refSel = (document.getElementById('customItemRefSel')||{}).value || '';
   var refOutro = (document.getElementById('customItemRefOutro')||{}).value || '';
   var unid = refSel === 'outro' ? (refOutro.trim() || 'outro') : refSel;
-  var preco = parseFloat((document.getElementById('customItemPreco')||{}).value) || null;
+  var unidCustom = (document.getElementById('customItemPreco')||{}).value || '';
 
   if (!nome.trim()) { showToast('Campo obrigatório','Informe o nome do produto.'); return; }
   if (!forn.trim()) { showToast('Campo obrigatório','Informe o fornecedor.'); return; }
@@ -1170,9 +1184,9 @@ function adicionarItemCustom() {
   var novoItem = {
     codigo: cod,
     produto: nome.trim().toUpperCase(),
-    unidade: unid.trim().toUpperCase() || 'UN',
+    unidade: unidCustom ? unidCustom.toUpperCase() : (unid.trim().toUpperCase() || 'UN'),
     categoria: cadeia === 'seca' ? 'SECOS E DURADOUROS' : 'Secos & Mercearia',
-    preco: preco,
+    preco: null,
     _custom: true,
     _cadeia: cadeia
   };
@@ -1187,7 +1201,7 @@ function adicionarItemCustom() {
   document.getElementById('customItemForn').value = '';
   if (document.getElementById('customItemRefSel')) document.getElementById('customItemRefSel').value = '';
   if (document.getElementById('customItemRefOutro')) { document.getElementById('customItemRefOutro').value = ''; document.getElementById('customItemRefOutro').style.display = 'none'; }
-  document.getElementById('customItemPreco').value = '';
+  document.getElementById('customItemPreco').selectedIndex = 0;
 
   renderSolCatalogo();
   solUpdateFooter();
