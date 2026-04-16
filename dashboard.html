@@ -1989,10 +1989,14 @@ function submitPreencherCompra() {
     var obs           = (document.getElementById('pcObs_'+i)||{}).value || '';
 
     if (!fornecedor) { erros.push('Item '+(i+1)+' ('+it.nome+'): fornecedor obrigatório.'); return; }
-    if (!valorUnit)  { erros.push('Item '+(i+1)+' ('+it.nome+'): valor unitário obrigatório.'); return; }
     if (!categoria)  { erros.push('Item '+(i+1)+' ('+it.nome+'): categoria obrigatória.'); return; }
-    if (!prazoPagamento) { erros.push('Item '+(i+1)+' ('+it.nome+'): prazo de pagamento obrigatório.'); return; }
-    if (!prazoEntrega)   { erros.push('Item '+(i+1)+' ('+it.nome+'): prazo de entrega obrigatório.'); return; }
+
+    // Itens sem valor vão para fila de espera do comprador (sem exigir prazo)
+    var semValor = !valorUnit;
+    if (!semValor) {
+      if (!prazoPagamento) { erros.push('Item '+(i+1)+' ('+it.nome+'): prazo de pagamento obrigatório.'); return; }
+      if (!prazoEntrega)   { erros.push('Item '+(i+1)+' ('+it.nome+'): prazo de entrega obrigatório.'); return; }
+    }
 
     compras.push({
       action: 'preencherCompra',
@@ -2004,11 +2008,13 @@ function submitPreencherCompra() {
       fornecedor: fornecedor,
       categoria: categoria,
       qtdConfirmada: qtdConfirmada,
-      valorUnitario: valorUnit,
-      valor: valor,
-      prazoPagamento: prazoPagamento,
-      prazoEntrega: prazoEntrega,
+      valorUnitario: valorUnit || null,
+      valor: valor || null,
+      prazoPagamento: prazoPagamento || null,
+      prazoEntrega: prazoEntrega || null,
       obs: obs,
+      // Sem valor = fica na fila aguardando cotação; com valor = vai para aprovação
+      _status: semValor ? 'aguardando_valor' : 'aguardando_aprovacao',
       timestamp: new Date().toISOString()
     });
   });
@@ -2035,7 +2041,7 @@ function submitPreencherCompra() {
       prazo_entrega:   payload.prazoEntrega || null,
       prazo_pagamento: payload.prazoPagamento || null,
       obs:             payload.obs || '',
-      status:          'aguardando_aprovacao',
+      status:          payload._status || 'aguardando_aprovacao',
       timestamp:       new Date().toISOString()
     };
     return sbPost('/compras', registro)
@@ -2046,11 +2052,16 @@ function submitPreencherCompra() {
   Promise.all(promises).then(function(results) {
     showLoading(false);
     results.forEach(function(c) {
-      state.compras.unshift(Object.assign({}, c, { status:'aguardando_aprovacao' }));
+      state.compras.unshift(Object.assign({}, c, { status: c._status || 'aguardando_aprovacao' }));
     });
     if (sol) sol.status = 'em_andamento';
     closeModal('modalPreencherCompra');
-    showToast('Enviado para aprovação', compras.length+' compra(s) enviadas para o Guilherme.');
+    var semValor = results.filter(function(c){ return c._status === 'aguardando_valor'; }).length;
+    var comValor = results.length - semValor;
+    var msg = '';
+    if (comValor > 0) msg += comValor + ' enviada(s) para aprovação';
+    if (semValor > 0) msg += (msg ? ' · ' : '') + semValor + ' sem valor → fila de espera';
+    showToast('Compras registradas', msg);
     updateBadges();
     renderView(state.activeView);
   });
