@@ -1928,6 +1928,43 @@ function atualizarResumoPC() {
     : 'Preencha pelo menos um item para enviar.';
 }
 
+// ── AUTO CATEGORIA ─────────────────────────────────────────────
+var AUTO_CAT = [
+  { cat: 'Bebidas Não-Alcoólicas',        words: ['água','agua','refrigerante','suco','coca','guaraná','guarana','tônica','tonica','schweppes','red bull','redbull','isotônico','isotonico','limonada','chá','cha','café','cafe','nespresso','energético','energetico','h2o'] },
+  { cat: 'Bebidas Alcoólicas',            words: ['vodka','whisky','whiskey','gin','tequila','rum','cachaça','cachaca','aperol','amarula','licor','espumante','prosecco','champagne','saquê','sake','cerveja','chopp','porto','vinho'] },
+  { cat: 'Vinhos & Espumantes',           words: ['vinho','wine','malbec','cabernet','chardonnay','merlot','pinot','chianti','brunello','rioja','sauvignon','espumante','chandon','moet','lambrusco','rosé','rose'] },
+  { cat: 'Higiene & Limpeza',             words: ['detergente','sabão','sabao','álcool','alcool','desinfetante','limpador','multiuso','sanitário','sanitario','bucha','esponja','pano','vassoura','rodo','cloro','alvejante','desincrustante','desinfe','higiene','papel higiênico','papel higienico','toalha','sabonete','shampoo','condicionador'] },
+  { cat: 'Descartáveis & Embalagens',     words: ['copo','prato','talher','garfo','faca','colher','guardanapo','canudo','sacola','embalagem','papel manteiga','papel alumínio','papel aluminio','filme pvc','marmita','bandeja','pote','vasilha','touca','luva descartável','luva descartavel','mascara'] },
+  { cat: 'Uniformes & EPIs',              words: ['uniforme','camiseta','calça','calca','avental','touca','sapato','bota','crocs','jaleco','colete','jaqueta','luva','óculos','oculos','proteção','protecao','epi','vestido','gravata','crachá','cracha'] },
+  { cat: 'Papelaria & Escritório',        words: ['papel','caneta','caderno','bloco','grampo','clipe','pasta','envelope','toner','tinta','impressora','sulfite','bobina','etiqueta','comanda','nota','fita','tesoura','cola','corretivo'] },
+  { cat: 'Utensílios & Equipamentos de Pequeno Porte', words: ['panela','frigideira','faca','tábua','tabua','concha','espátula','espatula','fouet','fue','escorredor','ralador','forma','assadeira','bule','garrafa','jarra','coador','liquidificador','mixer','balança','balanca','termômetro','termometro','pinça','pinca','grelha','rechaud'] },
+  { cat: 'Secos & Mercearia',             words: ['arroz','feijão','feijao','macarrão','macarrao','farinha','açúcar','acucar','sal','azeite','óleo','oleo','vinagre','molho','ketchup','mostarda','maionese','extrato','caldo','tempero','pimenta','orégano','oregano','noz','canela','gengibre','creme de leite','leite','manteiga','margarina','chocolate','nutella','mel','geleia','goiabada','doce'] },
+  { cat: 'Alimentação de Colaboradores',  words: ['marmita colaborador','refeição colaborador','refeicao colaborador','lanche colaborador','cesta básica','cesta basica'] },
+];
+
+function detectarCategoria(nomeItem) {
+  if (!nomeItem) return '';
+  var nome = nomeItem.toLowerCase();
+  for (var i = 0; i < AUTO_CAT.length; i++) {
+    for (var j = 0; j < AUTO_CAT[i].words.length; j++) {
+      if (nome.indexOf(AUTO_CAT[i].words[j]) >= 0) return AUTO_CAT[i].cat;
+    }
+  }
+  return '';
+}
+
+function aplicarAutoCategoria(idx, nomeItem) {
+  var cat = detectarCategoria(nomeItem);
+  if (!cat) return;
+  var selects = document.querySelectorAll('#pcItensBody tr:nth-child('+(idx+1)+') select');
+  if (selects[0]) {
+    selects[0].value = cat;
+    // Esconde campo "Outros" se estava visível
+    var outro = document.getElementById('pcCatOutro_'+idx);
+    if (outro) outro.style.display = 'none';
+  }
+}
+
 function abrirPreencherCompra(solId) {
   var sol = state.solicitacoes.find(function(s){ return s.solId===solId; });
   if (!sol) return;
@@ -1956,6 +1993,8 @@ function abrirPreencherCompra(solId) {
   });
 
   document.getElementById('pcItensBody').innerHTML = rows || '<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--muted)">Nenhum item nesta solicitação.</td></tr>';
+  // Aplica categoria automática para cada item
+  itens.forEach(function(it, i) { aplicarAutoCategoria(i, it.nome); });
   document.getElementById('pcModalSub').textContent = 'Solicitação ' + solId + ' · ' + itens.length + ' item(s) · Preencha os que serão comprados agora.';
   document.getElementById('pcResumo').textContent = 'Preencha pelo menos um item para enviar.';
   document.getElementById('modalPreencherCompra').classList.add('show');
