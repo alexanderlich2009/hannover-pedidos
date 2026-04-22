@@ -2093,7 +2093,14 @@ function submitPreencherCompra() {
     results.forEach(function(c) {
       state.compras.unshift(Object.assign({}, c, { status: c._status || 'aguardando_aprovacao' }));
     });
-    if (sol) sol.status = 'em_andamento';
+    if (sol) {
+      sol.status = 'em_andamento';
+      // Persiste o status no Supabase
+      sbFetch('/solicitacoes?sol_id=eq.' + encodeURIComponent(state.activeSolId), 'PATCH', {
+        status: 'em_andamento',
+        updated_at: new Date().toISOString()
+      });
+    }
     closeModal('modalPreencherCompra');
     var semValor = results.filter(function(c){ return c._status === 'aguardando_valor'; }).length;
     var comValor = results.length - semValor;
