@@ -364,14 +364,16 @@ tr:hover td{background:rgba(139,26,43,0.02)}
 // Substitua pelos valores do seu projeto Supabase
 var SUPABASE_URL = 'https://qijwlgophinmscgtdpmb.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_UWHcXTDvKfG_q2C1xPlcbw_-G26t85a';
+var SUPABASE_KEY_WRITE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpandsZ29waGlubXNjZ3RkcG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE2NTMsImV4cCI6MjA5MTE2NzY1M30.HKrppltvS12zFglwtdNsbtBtUsui4jvBXvBJs6o82WM';
 
 // Helper Supabase REST
 function sbFetch(path, method, body) {
+  var key = (method && method !== 'GET') ? SUPABASE_KEY_WRITE : SUPABASE_KEY;
   var opts = {
     method: method || 'GET',
     headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'apikey': key,
+      'Authorization': 'Bearer ' + key,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
