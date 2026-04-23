@@ -411,7 +411,9 @@ var state = {
   activeCompraId: null,
   expandedRow: null,
   filterUnidade: 'todas',
-  filterStatus: 'todos'
+  filterStatus: 'todos',
+  historicoFiltroInicio: null,
+  historicoFiltroFim: null
 };
 
 // ── NAV USER ──────────────────────────────────────────────
@@ -638,18 +640,67 @@ function renderAprovacoesAdmin(mc) {
 
 function renderHistoricoCompras(mc) {
   var executor = USER.login;
+  var hoje = new Date().toISOString().split('T')[0];
+  var umMesAtras = new Date(); umMesAtras.setMonth(umMesAtras.getMonth() - 1);
+  var dataInicio = state.historicoFiltroInicio || umMesAtras.toISOString().split('T')[0];
+  var dataFim    = state.historicoFiltroFim    || hoje;
+
   var compras = PERFIL === 'comprador'
     ? state.compras.filter(function(c){
         return c.executor === executor &&
           (c.status === 'recebido' || c.status === 'recebido_divergencia' || c.status === 'rejeitado');
       })
     : state.compras;
+
+  // Aplica filtro de data
+  var comprasFiltradas = compras.filter(function(c) {
+    if (!c.timestamp) return true;
+    var d = c.timestamp.split('T')[0];
+    return d >= dataInicio && d <= dataFim;
+  });
+
   mc.innerHTML =
     '<div class="section-header">' +
       '<div class="section-title">Histórico de Compras</div>' +
       '<div class="section-sub">Compras concluídas — recebidas, com divergência ou rejeitadas</div>' +
     '</div>' +
-    buildComprasTable(compras, PERFIL !== 'comprador', 'historico');
+
+    // FILTRO DE DATA
+    '<div style="background:var(--white);border:1px solid var(--border);border-radius:3px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">' +
+      '<div>' +
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Data Início</div>' +
+        '<input type="date" id="histFiltroInicio" value="'+dataInicio+'" style="border:1px solid var(--border);border-radius:2px;padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none">' +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Data Fim</div>' +
+        '<input type="date" id="histFiltroFim" value="'+dataFim+'" style="border:1px solid var(--border);border-radius:2px;padding:8px 12px;font-family:Montserrat,sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none">' +
+      '</div>' +
+      '<button class="btn-sm btn-primary" onclick="aplicarFiltroHistorico()">Filtrar</button>' +
+      '<button class="btn-sm btn-ghost" onclick="limparFiltroHistorico()">Limpar filtro</button>' +
+      '<div style="margin-left:auto;font-size:12px;color:var(--muted);align-self:center">' +
+        '<b>'+comprasFiltradas.length+'</b> compra(s) no período' +
+      '</div>' +
+    '</div>' +
+
+    buildComprasTable(comprasFiltradas, PERFIL !== 'comprador', 'historico');
+}
+
+function aplicarFiltroHistorico() {
+  var ini = (document.getElementById('histFiltroInicio')||{}).value || '';
+  var fim = (document.getElementById('histFiltroFim')||{}).value || '';
+  if (ini && fim && ini > fim) {
+    showToast('Data inválida', 'A data início não pode ser maior que a data fim.');
+    return;
+  }
+  state.historicoFiltroInicio = ini;
+  state.historicoFiltroFim    = fim;
+  renderHistoricoCompras(document.getElementById('mainContent'));
+}
+
+function limparFiltroHistorico() {
+  state.historicoFiltroInicio = null;
+  state.historicoFiltroFim    = null;
+  renderHistoricoCompras(document.getElementById('mainContent'));
 }
 
 // ══════════════════════════════════════════════
