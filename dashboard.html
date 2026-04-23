@@ -283,43 +283,41 @@ tr:hover td{background:rgba(139,26,43,0.02)}
 </div>
 
 <!-- MODAL PREENCHER COMPRA (Alexandre/Rafael) — item a item -->
-<div class="modal-overlay" id="modalPreencherCompra">
-  <div class="modal-box" style="max-width:98vw;width:1100px;padding:32px 28px">
-    <div class="modal-title">Preencher Compra</div>
-    <div class="modal-sub" id="pcModalSub">Preencha os dados de cada item para aprovação do Guilherme.</div>
-
-    <div style="overflow-x:auto;margin-bottom:16px">
-      <table id="pcItensTable" style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px">
-        <thead>
+<div class="modal-overlay" id="modalPreencherCompra" style="align-items:stretch;padding:0">
+  <div style="background:var(--white);width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="background:var(--dark);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream)">Preencher Compra</div>
+        <div style="font-size:11px;color:rgba(201,169,110,0.6);margin-top:2px" id="pcModalSub">Preencha os dados de cada item.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="pcResumo" style="font-size:12px;color:rgba(247,243,238,0.6)"></div>
+        <button class="btn-sm btn-ghost" style="border-color:rgba(247,243,238,.2);color:rgba(247,243,238,.5)" onclick="closeModal('modalPreencherCompra')">Cancelar</button>
+        <button class="btn-sm btn-primary" onclick="submitPreencherCompra()">Enviar para Aprovação →</button>
+      </div>
+    </div>
+    <div style="background:rgba(201,169,110,0.08);border-bottom:1px solid var(--border);padding:8px 28px;font-size:11px;color:var(--muted);flex-shrink:0">
+      💡 Itens sem fornecedor preenchido voltam automaticamente para a fila. Preencha apenas os que serão comprados agora.
+    </div>
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead style="position:sticky;top:0;z-index:10">
           <tr style="background:var(--bg);border-bottom:2px solid var(--border)">
-            <th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:160px">Produto</th>
-            <th style="padding:8px 6px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:60px">Qtd</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:60px">Unid.</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:80px">Referência</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:140px">Fornecedor *</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:140px">Categoria *</th>
-            <th style="padding:8px 6px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:90px">Vlr Unit. *</th>
-            <th style="padding:8px 6px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:90px">Total</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:120px">Pz. Pagto *</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:110px">Pz. Entrega *</th>
-            <th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);min-width:100px">Obs</th>
+            <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:16%">Produto</th>
+            <th style="padding:10px 6px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:5%">Qtd</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:5%">Unid.</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:7%">Ref.</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:16%">Fornecedor *</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:14%">Categoria *</th>
+            <th style="padding:10px 6px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:8%">Vlr Unit.</th>
+            <th style="padding:10px 6px;text-align:right;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:8%">Total</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:10%">Pz. Pagto</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:7%">Entrega</th>
+            <th style="padding:10px 6px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);width:4%">Obs</th>
           </tr>
         </thead>
         <tbody id="pcItensBody"></tbody>
       </table>
-    </div>
-
-    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">
-      💡 Campos marcados com * são obrigatórios. O valor total é calculado automaticamente (Qtd × Vlr Unit.).
-      Itens que não serão comprados agora podem ser deixados em branco — só os preenchidos serão enviados.
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:16px">
-      <div id="pcResumo" style="font-size:12px;color:var(--muted)"></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn-sm btn-ghost" onclick="closeModal('modalPreencherCompra')">Cancelar</button>
-        <button class="btn-sm btn-primary" onclick="submitPreencherCompra()">Enviar para Aprovação</button>
-      </div>
     </div>
   </div>
 </div>
