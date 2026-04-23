@@ -2095,20 +2095,50 @@ function submitPreencherCompra() {
     results.forEach(function(c) {
       state.compras.unshift(Object.assign({}, c, { status: c._status || 'aguardando_aprovacao' }));
     });
+
+    // Identifica itens NÃO preenchidos pelo Alexandre
+    var codigosPreenchidos = compras.map(function(c){ return c.produto; });
+    var itensRestantes = itens.filter(function(it, i) {
+      var fornecedor = (document.getElementById('pcForn_'+i)||{}).value || '';
+      var valorUnit  = (document.getElementById('pcUnit_'+i)||{}).value || '';
+      return !fornecedor && !valorUnit;
+    });
+
+    // Se sobrou algum item não preenchido, cria nova solicitação pendente na fila
+    var promiseSol = Promise.resolve();
+    if (itensRestantes.length > 0) {
+      var novoSolId = 'SOL-' + new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + '-' + Math.floor(Math.random()*1000);
+      var novoRegistro = {
+        sol_id:      novoSolId,
+        solicitante: sol ? sol.solicitante : '—',
+        perfil:      sol ? sol.perfil : '',
+        itens:       itensRestantes,
+        obs:         (sol ? sol.obs || '' : '') + ' [Itens restantes de ' + state.activeSolId + ']',
+        status:      'pendente',
+        timestamp:   new Date().toISOString()
+      };
+      promiseSol = sbPost('/solicitacoes', novoRegistro)
+        .then(function(){ })
+        .catch(function(){ });
+      state.solicitacoes.unshift(Object.assign({}, novoRegistro, { solId: novoSolId }));
+    }
+
+    // Atualiza solicitação original para em_andamento
     if (sol) {
       sol.status = 'em_andamento';
-      // Persiste o status no Supabase
       sbFetch('/solicitacoes?sol_id=eq.' + encodeURIComponent(state.activeSolId), 'PATCH', {
         status: 'em_andamento',
         updated_at: new Date().toISOString()
       });
     }
+
     closeModal('modalPreencherCompra');
     var semValor = results.filter(function(c){ return c._status === 'aguardando_valor'; }).length;
     var comValor = results.length - semValor;
     var msg = '';
     if (comValor > 0) msg += comValor + ' enviada(s) para aprovação';
     if (semValor > 0) msg += (msg ? ' · ' : '') + semValor + ' sem valor → fila de espera';
+    if (itensRestantes.length > 0) msg += ' · ' + itensRestantes.length + ' item(s) voltaram para a fila';
     showToast('Compras registradas', msg);
     updateBadges();
     renderView(state.activeView);
