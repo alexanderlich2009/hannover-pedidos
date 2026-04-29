@@ -413,7 +413,8 @@ var state = {
   filterUnidade: 'todas',
   filterStatus: 'todos',
   historicoFiltroInicio: null,
-  historicoFiltroFim: null
+  historicoFiltroFim: null,
+  filtroFornecedor: ''
 };
 
 // ── NAV USER ──────────────────────────────────────────────
@@ -631,11 +632,30 @@ function renderComprasAdmin(mc) {
 function renderAprovacoesAdmin(mc) {
   var compras = state.compras.filter(function(c){ return c.status==='aguardando_aprovacao'; });
   mc.innerHTML =
-    '<div class="section-header">' +
-      '<div class="section-title">Aguardando Aprovação</div>' +
-      '<div class="section-sub">Compras preenchidas pelos compradores que precisam da sua aprovação</div>' +
+    '<div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start">' +
+      '<div><div class="section-title">Aguardando Aprovação</div>' +
+      '<div class="section-sub">Compras preenchidas pelos compradores que precisam da sua aprovação</div></div>' +
+      (compras.length > 1 ? '<button class="btn-sm btn-green" onclick="aprovarTudo()" style="margin-top:4px">✓ Aprovar Tudo ('+compras.length+')</button>' : '') +
     '</div>' +
     buildComprasTable(compras, true, 'aprovacao');
+}
+
+function aprovarTudo() {
+  var compras = state.compras.filter(function(c){ return c.status==='aguardando_aprovacao'; });
+  if (!compras.length) return;
+  if (!confirm('Aprovar todas as ' + compras.length + ' compras pendentes?')) return;
+  showLoading(true);
+  var promises = compras.map(function(c) {
+    return sbFetch('/compras?compra_id=eq.' + encodeURIComponent(c.compraId), 'PATCH', {
+      status: 'aprovado', aprovado_por: USER.login,
+      obs_aprovacao: 'Aprovação em lote', updated_at: new Date().toISOString()
+    }).then(function(){ c.status = 'aprovado'; });
+  });
+  Promise.all(promises).then(function() {
+    showLoading(false);
+    showToast('Todas aprovadas ✓', compras.length + ' compras aprovadas de uma vez.');
+    updateBadges(); renderView(state.activeView);
+  });
 }
 
 function renderHistoricoCompras(mc) {
@@ -1453,12 +1473,21 @@ function renderFilaCompras(mc) {
 function renderEmAndamento(mc) {
   var executor = USER.login;
   var compras = state.compras.filter(function(c){ return c.executor===executor && c.status==='em_andamento'; });
+  var filtroForn = state.filtroFornecedor || '';
+  var comprasFiltradas = filtroForn
+    ? compras.filter(function(c){ return (c.fornecedor||'').toLowerCase().indexOf(filtroForn.toLowerCase()) >= 0; })
+    : compras;
   mc.innerHTML =
     '<div class="section-header">' +
       '<div class="section-title">Em Andamento</div>' +
       '<div class="section-sub">Compras que você está executando</div>' +
     '</div>' +
-    buildComprasTable(compras, false, 'comprador');
+    '<div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">' +
+      '<input id="filtroFornInput" class="form-input" placeholder="🔍 Filtrar por fornecedor..." value="'+filtroForn+'" oninput="state.filtroFornecedor=this.value;renderEmAndamento(document.getElementById('mainContent'))" style="max-width:300px">' +
+      (filtroForn ? '<button class="btn-sm btn-ghost" onclick="state.filtroFornecedor='';renderEmAndamento(document.getElementById('mainContent'))">Limpar</button>' : '') +
+      '<span style="font-size:12px;color:var(--muted)">'+comprasFiltradas.length+' de '+compras.length+' compras</span>' +
+    '</div>' +
+    buildComprasTable(comprasFiltradas, false, 'comprador');
 }
 
 function renderAguardandoAprovacao(mc) {
@@ -1931,6 +1960,25 @@ function submitSolCompra() {
 var CATEGORIAS_PC = ['Compra de Mercadoria','Bebidas','Vinho','Produto de Limpeza','Uniformes','Descartáveis','Utensílios','Compra para Colaboradores','Papelaria','Manutenção','Outros'];
 var PRAZOS_PC = ['À vista','7 dias','14 dias','21 dias','28 dias','30 dias','45 dias','60 dias','Parcelado','Outro'];
 
+// Memória de fornecedores usados (sessão)
+var FORNECEDORES_MEMORIA = [];
+function registrarFornecedor(nome) {
+  if (!nome || FORNECEDORES_MEMORIA.indexOf(nome) >= 0) return;
+  FORNECEDORES_MEMORIA.unshift(nome);
+  if (FORNECEDORES_MEMORIA.length > 10) FORNECEDORES_MEMORIA.pop();
+}
+function sugerirFornecedor(inputEl) {
+  if (!inputEl || !FORNECEDORES_MEMORIA.length) return;
+  var lista = document.getElementById('fornSugestoes');
+  if (!lista) {
+    lista = document.createElement('datalist');
+    lista.id = 'fornSugestoes';
+    document.body.appendChild(lista);
+  }
+  lista.innerHTML = FORNECEDORES_MEMORIA.map(function(f){ return '<option value="'+f+'">'; }).join('');
+  inputEl.setAttribute('list', 'fornSugestoes');
+}
+
 function categoriaSelect(idx) {
   var opts = CATEGORIAS_PC.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('');
   return '<select style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg)" onchange="onCatChange(this,'+idx+')">' +
@@ -2033,7 +2081,7 @@ function abrirPreencherCompra(solId) {
         '<td style="padding:8px 6px"><input id="pcQtd_'+i+'" type="number" step="0.001" min="0" value="'+(it.qtd||it.qtdSugerida||0)+'" oninput="calcValorLinha('+i+')" style="width:70px;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;text-align:center;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg)"></td>' +
         '<td style="padding:8px 6px;font-size:12px;color:var(--muted)">' + (it.unid||'—') + '</td>' +
         '<td style="padding:8px 6px"><input id="pcRef_'+i+'" placeholder="5kg, un..." style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg)"></td>' +
-        '<td style="padding:8px 6px"><input id="pcForn_'+i+'" placeholder="Fornecedor" style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg)"></td>' +
+        '<td style="padding:8px 6px"><input id="pcForn_'+i+'" list="fornSugestoes" placeholder="Fornecedor" value="'+(it.fornecedorRef||'')+'" style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg)"></td>' +
         '<td style="padding:8px 6px">' + categoriaSelect(i) + '</td>' +
         '<td style="padding:8px 6px"><input id="pcUnit_'+i+'" type="number" step="0.01" min="0" placeholder="0,00" oninput="calcValorLinha('+i+')" style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--text);background:var(--bg);text-align:right"></td>' +
         '<td style="padding:8px 6px"><input id="pcTot_'+i+'" type="number" step="0.01" placeholder="—" readonly style="width:100%;border:1px solid var(--border);border-radius:2px;padding:5px 6px;font-size:11px;font-family:Montserrat,sans-serif;color:var(--muted);background:rgba(44,16,16,0.04);text-align:right"></td>' +
@@ -2088,6 +2136,7 @@ function submitPreencherCompra() {
       if (!prazoEntrega)   { erros.push('Item '+(i+1)+' ('+it.nome+'): prazo de entrega obrigatório.'); return; }
     }
 
+    registrarFornecedor(fornecedor);
     compras.push({
       action: 'preencherCompra',
       solId: state.activeSolId,
@@ -2715,6 +2764,11 @@ var el = document.getElementById('nav_'+firstView);
 if (el) el.classList.add('active');
 
 loadData();
+
+// Auto-refresh a cada 3 minutos
+setInterval(function() {
+  loadData();
+}, 3 * 60 * 1000);
 </script>
 </body>
 </html>
