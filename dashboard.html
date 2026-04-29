@@ -2139,18 +2139,18 @@ function submitPreencherCompra() {
       .catch(function(){ return Object.assign({}, payload, { compraId: compraId }); });
   });
 
+  // Captura itens restantes ANTES de fechar o modal (enquanto o DOM ainda existe)
+  var itensRestantes = itens.filter(function(it, i) {
+    var fornecedor = (document.getElementById('pcForn_'+i)||{}).value || '';
+    var valorUnit  = (document.getElementById('pcUnit_'+i)||{}).value || '';
+    return !fornecedor && !valorUnit;
+  });
+  var solIdOriginal = state.activeSolId;
+
   Promise.all(promises).then(function(results) {
     showLoading(false);
     results.forEach(function(c) {
       state.compras.unshift(Object.assign({}, c, { status: c._status || 'aguardando_aprovacao' }));
-    });
-
-    // Identifica itens NÃO preenchidos pelo Alexandre
-    var codigosPreenchidos = compras.map(function(c){ return c.produto; });
-    var itensRestantes = itens.filter(function(it, i) {
-      var fornecedor = (document.getElementById('pcForn_'+i)||{}).value || '';
-      var valorUnit  = (document.getElementById('pcUnit_'+i)||{}).value || '';
-      return !fornecedor && !valorUnit;
     });
 
     // Se sobrou algum item não preenchido, cria nova solicitação pendente na fila
@@ -2175,7 +2175,7 @@ function submitPreencherCompra() {
     // Atualiza solicitação original para em_andamento
     if (sol) {
       sol.status = 'em_andamento';
-      sbFetch('/solicitacoes?sol_id=eq.' + encodeURIComponent(state.activeSolId), 'PATCH', {
+      sbFetch('/solicitacoes?sol_id=eq.' + encodeURIComponent(solIdOriginal), 'PATCH', {
         status: 'em_andamento',
         updated_at: new Date().toISOString()
       });
