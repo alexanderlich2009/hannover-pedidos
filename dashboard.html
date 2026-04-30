@@ -869,7 +869,7 @@ function abrirAssinatura(romId,pedId,e){
   var info=r?'Romaneio #'+r.numero+' · '+r.unidade:'Pedido '+pedId;
   document.getElementById('sigInfo').textContent='Confirme os itens recebidos e assine · '+info;
   // Checklist de itens
-  var its=(r?r.itens:p?p.itens:[]))||[];
+  var its=(r?r.itens:p?p.itens:[])||[];
   var checkHtml='';
   if(its.length){
     checkHtml='<div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Confirme os itens recebidos:</div>';
