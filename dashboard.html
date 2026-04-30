@@ -211,6 +211,7 @@ function buildSidebar(){
     nav+=sec('Gerencial');nav+=item('dashboard','📊','Dashboard');nav+=item('dre','📈','DRE por Unidade');nav+=item('input','✏️','Input Diário');nav+=item('relatorio','📄','Relatório Semanal');
     nav+=sec('Suprimentos');nav+=item('pedidos','📦','Pedidos Internos');nav+=item('ordens','🛒','Ordens de Compra');nav+=item('romaneios','🚚','Romaneios');nav+=item('cmv','📉','CMV');
     nav+=sec('Relacionamento');nav+=item('nps','⭐','NPS');
+    nav+=sec('Análises');nav+=item('consumo','👤','Consumo por Pessoa');
     nav+=sec('Admin');nav+=item('usuarios','👥','Usuários');nav+=item('insumos','📦','Insumos');nav+=item('fornecedores','🏢','Fornecedores');
   } else if(IS_OPERADOR){
     nav+=sec('Minha Unidade');nav+=item('minha-unidade','🏠','Visão Geral');nav+=item('meus-pedidos','📦','Meus Pedidos');nav+=item('romaneios','🚚','Romaneios');
@@ -256,7 +257,7 @@ function render(view){
     'aprovadas':vAprovadas,'historico':vHistorico,'sol-nova':vSolNova,'sol-minhas':vSolMinhas,
     'compras-retorno':vComprasRetorno,'recebimento':vRecebimento,
     'usuarios':vUsuarios,'insumos':vInsumos,'fornecedores':vFornecedores,
-    'minha-unidade':vMinhaUnidade,'meus-pedidos':vMeusPedidos
+    'minha-unidade':vMinhaUnidade,'meus-pedidos':vMeusPedidos,'consumo':vConsumo
   }[view];
   if(fn)fn(m);else m.innerHTML=empty('Página não encontrada','');
 }
@@ -1046,6 +1047,116 @@ async function confirmarRecebimento(cid){
   await sbPatch('/compras?compra_id=eq.'+enc(cid),{status:'recebido',recebido_por:USER.login,updated_at:new Date().toISOString()});
   var c=D.compras.find(function(x){return(x.compra_id||x.compraId)===cid;});if(c)c.status='recebido';
   toast('Recebido ✓','');render(D.view);
+}
+
+
+function mudaConsumoUnid(v){D._consumoUnid=v;go("consumo");}
+function mudaConsumoPeriodo(v){D._consumoPeriodo=v;go("consumo");}
+// ── CONSUMO POR PESSOA ─────────────────────────────────────────
+function vConsumo(m){
+  var mes=new Date().toISOString().slice(0,7);
+  var unidSel=D._consumoUnid||UNIDADES[0];
+  var periodoSel=D._consumoPeriodo||mes;
+
+  // Meses disponíveis
+  var meses=[...new Set(D.dailyRevenue.map(function(d){return(d.date||'').slice(0,7);}))].filter(Boolean).sort().reverse();
+  if(!meses.length) meses=[mes];
+
+  // Covers do período
+  var covers=D.dailyRevenue.filter(function(d){return d.unit_name===unidSel&&(d.date||'').startsWith(periodoSel);}).reduce(function(s,d){return s+(+d.covers||0);},0);
+
+  // Pedidos do período para essa unidade
+  var pedidosPeriodo=D.pedidos.filter(function(p){
+    return p.unidade===unidSel&&(p.timestamp||'').startsWith(periodoSel);
+  });
+
+  // Agrega itens por categoria e produto
+  var agg={};
+  pedidosPeriodo.forEach(function(p){
+    (p.itens||[]).forEach(function(it){
+      var key=it.categoria+'||'+it.produto+'||'+it.unidade;
+      if(!agg[key]) agg[key]={categoria:it.categoria,produto:it.produto,unidade:it.unidade,total:0};
+      agg[key].total+=+(it.qty||0);
+    });
+  });
+
+  // Agrupa por categoria
+  var porCat={};
+  Object.values(agg).forEach(function(it){
+    if(!porCat[it.categoria]) porCat[it.categoria]=[];
+    porCat[it.categoria].push(it);
+  });
+
+  var cats=Object.keys(porCat).sort();
+
+  var filtros='<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px">'+
+    '<div><div class="form-label">Unidade</div>'+
+      '<select class="form-select" style="width:220px" onchange="D._consumoUnid=this.value;go(\'consumo\')">'+
+        UNIDADES.map(function(u){return'<option'+(u===unidSel?' selected':'')+' value="'+u+'">'+u.replace('Hannover Fondue ','').replace('Hannover ','')+'</option>';}).join('')+
+      '</select>'+
+    '</div>'+
+    '<div><div class="form-label">Período</div>'+
+      '<select class="form-select" style="width:160px" onchange="mudaConsumoPeriodo(this.value)">'+
+        meses.map(function(mm){return'<option'+(mm===periodoSel?' selected':'')+' value="'+mm+'">'+mm+'</option>';}).join('')+
+      '</select>'+
+    '</div>'+
+    '<div style="padding-bottom:2px;font-size:12px;color:var(--muted)">'+covers+' covers no período · '+pedidosPeriodo.length+' pedidos</div>'+
+  '</div>';
+
+  if(!pedidosPeriodo.length){
+    m.innerHTML=pgHdr('Consumo por Pessoa','Quanto cada unidade consome por cliente atendido')+filtros+
+      '<div class="card card-body">'+empty('Sem pedidos neste período','Selecione outro período ou unidade.')+'</div>';
+    return;
+  }
+
+  if(!covers){
+    m.innerHTML=pgHdr('Consumo por Pessoa','Quanto cada unidade consome por cliente atendido')+filtros+
+      '<div class="alert alert-yellow">Sem covers lançados para este período. Lance os dados no <b>Input Diário</b> para ver o consumo por pessoa.</div>';
+    return;
+  }
+
+  var tabelaHtml='';
+  cats.forEach(function(cat){
+    var itens=porCat[cat].sort(function(a,b){return b.total-a.total;});
+    var rows=itens.map(function(it){
+      var cpp=covers>0?(it.total/covers).toFixed(3):'—';
+      var bar=covers>0?Math.min(it.total/covers*200,100):0;
+      return'<tr>'+
+        '<td><div class="td-name">'+it.produto+'</div></td>'+
+        '<td style="text-align:center;font-weight:600">'+it.total+' '+it.unidade+'</td>'+
+        '<td style="text-align:center;color:var(--fria);font-weight:700">'+cpp+'</td>'+
+        '<td style="width:120px"><div class="bar-wrap"><div class="bar-fill" style="width:'+bar+'%;background:var(--fria)"></div></div></td>'+
+      '</tr>';
+    }).join('');
+    tabelaHtml+='<div class="card" style="margin-bottom:16px">'+
+      '<div class="card-hdr"><span class="card-title">'+cat+'</span>'+
+        '<span style="font-size:11px;color:var(--muted)">'+itens.length+' produto(s)</span>'+
+      '</div>'+
+      '<table><thead><tr><th>Produto</th><th style="text-align:center">Qtd Total</th><th style="text-align:center">Por Pessoa</th><th>Proporção</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table>'+
+    '</div>';
+  });
+
+  // Histórico dos últimos 6 meses
+  var mesesHist=meses.slice(0,6).reverse();
+  var historicoHtml='';
+  if(mesesHist.length>1){
+    var topItens=Object.values(agg).sort(function(a,b){return b.total-a.total;}).slice(0,5);
+    var histRows=topItens.map(function(it){
+      var cells=mesesHist.map(function(mm){
+        var cov=D.dailyRevenue.filter(function(d){return d.unit_name===unidSel&&(d.date||'').startsWith(mm);}).reduce(function(s,d){return s+(+d.covers||0);},0);
+        var peds=D.pedidos.filter(function(p){return p.unidade===unidSel&&(p.timestamp||'').startsWith(mm);});
+        var qty=0;peds.forEach(function(p){(p.itens||[]).forEach(function(x){if(x.produto===it.produto)qty+=(+x.qty||0);});});
+        var cpp=cov>0?(qty/cov).toFixed(2):'—';
+        return'<td style="text-align:center;font-size:12px">'+cpp+'</td>';
+      }).join('');
+      return'<tr><td><div class="td-name" style="font-size:12px">'+it.produto+'</div></td>'+cells+'</tr>';
+    }).join('');
+    historicoHtml='<div class="card"><div class="card-hdr"><span class="card-title">Histórico — Top 5 Produtos (consumo por pessoa)</span></div>'+
+      '<div style="overflow-x:auto"><table><thead><tr><th>Produto</th>'+mesesHist.map(function(mm){return'<th style="text-align:center">'+mm+'</th>';}).join('')+'</tr></thead><tbody>'+histRows+'</tbody></table></div></div>';
+  }
+
+  m.innerHTML=pgHdr('Consumo por Pessoa','Quanto cada unidade consome por cliente atendido')+filtros+tabelaHtml+historicoHtml;
 }
 
 // ── LOAD DATA ──────────────────────────────────────────────────
