@@ -79,7 +79,9 @@ function doLogin() {
   var user = USERS[u];
   if (!user || user.senha !== p) { err.style.display='block'; return; }
   err.style.display = 'none';
-  sessionStorage.setItem('han_user', JSON.stringify({ login:u, perfil:user.perfil, unidade:user.unidade, acesso:user.acesso }));
+  var userData = JSON.stringify({ login:u, perfil:user.perfil, unidade:user.unidade, acesso:user.acesso });
+  sessionStorage.setItem('han_user', userData);
+  localStorage.setItem('han_user', userData); // Persiste sessão entre abas
   window.location.href = user.perfil==='operador' ? 'pedidos.html' : 'dashboard.html';
 }
 
