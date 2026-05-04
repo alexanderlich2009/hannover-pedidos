@@ -225,11 +225,11 @@ if (!USER || !USER.acesso || USER.acesso.indexOf('dashboard')<0) {
 var PERFIL = USER.perfil;
 var IS_ADMIN = PERFIL==='admin';
 
-document.getElementById('navUser').innerHTML =
+(document.getElementById('navUser')||{}).innerHTML =
   '<div class="nav-user-name">'+USER.login+'</div>'+
   '<div class="nav-user-role">'+labelPerfil(PERFIL)+'</div>';
 if (['admin','cd','cozinha','cd_cozinha'].indexOf(PERFIL)>=0)
-  document.getElementById('btnPedidos').style.display='inline-block';
+  (document.getElementById('btnPedidos')||{}).style.display='inline-block';
 
 function labelPerfil(p) {
   return {'admin':'Administrador','comprador':'Comprador','cd':'CD Cadeia Seca','cozinha':'CD Cadeia Fria','cd_cozinha':'CD Geral','recebedor_fria':'Recebedor Fria','recebedor_seca':'Recebedor Seca','operador':'Gerente de Unidade'}[p]||p;
@@ -289,7 +289,7 @@ function buildSidebar() {
     nav += item('recebimento','📬','A Receber');
     nav += item('romaneios','🚚','Romaneios');
   }
-  document.getElementById('sidebar').innerHTML = nav;
+  (document.getElementById('sidebar')||{}).innerHTML = nav;
 }
 function sec(t){ return '<div class="sb-sec">'+t+'</div>'; }
 function item(id,icon,label){ return '<div class="sb-item" id="nav_'+id+'" onclick="go(\''+id+'\')"><span class="sb-icon">'+icon+'</span>'+label+'<span class="sb-badge" id="b_'+id+'"></span></div>'; }
@@ -530,7 +530,7 @@ function renderInputCards() {
       '</div>';
   });
   html += '</div>';
-  document.getElementById('inputCards').innerHTML = html;
+  (document.getElementById('inputCards')||{}).innerHTML = html;
 }
 
 function calcPct(uid) {
@@ -543,7 +543,7 @@ function calcPct(uid) {
 }
 
 async function salvarInput(unidade, uid) {
-  var date=document.getElementById('inputDate').value;
+  var date=(document.getElementById('inputDate')||{}).value;
   var rev=+(document.getElementById('r_'+uid)||{}).value||0;
   var cov=+(document.getElementById('c_'+uid)||{}).value||0;
   var cmv=+(document.getElementById('m_'+uid)||{}).value||0;
@@ -1448,9 +1448,9 @@ function abrirAssinatura(romId, pedId, e) {
   if(e)e.stopPropagation();
   _sigRomId=romId; _sigPedId=pedId;
   var info=romId?'Romaneio #'+(D.romaneios.find(function(r){return r.id===romId;})||{}).numero:'Pedido '+pedId;
-  document.getElementById('sigInfo').textContent='Assine abaixo para confirmar o recebimento · '+info;
+  (document.getElementById('sigInfo')||{}).textContent='Assine abaixo para confirmar o recebimento · '+info;
   initCanvas();
-  document.getElementById('modalAssinatura').classList.add('show');
+  (document.getElementById('modalAssinatura')||{}).classList.add('show');
 }
 
 function initCanvas() {
@@ -1467,7 +1467,7 @@ function initCanvas() {
   ctx.scale(dpr,dpr);
   ctx.clearRect(0,0,(rect.width||400),160);
   ctx.strokeStyle='#2C1010';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
-  document.getElementById('sigStatus').textContent='Desenhe sua assinatura acima';
+  (document.getElementById('sigStatus')||{}).textContent='Desenhe sua assinatura acima';
 
   function pos(e){
     var r=canvas.getBoundingClientRect();
@@ -1476,7 +1476,7 @@ function initCanvas() {
   }
   function start(e){e.preventDefault();_sigDraw=true;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
   function move(e){e.preventDefault();if(!_sigDraw)return;var p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}
-  function stop(e){e.preventDefault();_sigDraw=false;canvas.className='sig-canvas done';document.getElementById('sigStatus').textContent='Assinatura capturada ✓';}
+  function stop(e){e.preventDefault();_sigDraw=false;canvas.className='sig-canvas done';(document.getElementById('sigStatus')||{}).textContent='Assinatura capturada ✓';}
   canvas.removeEventListener('mousedown',canvas._mstart);canvas.removeEventListener('mousemove',canvas._mmove);canvas.removeEventListener('mouseup',canvas._mstop);
   canvas.removeEventListener('touchstart',canvas._tstart);canvas.removeEventListener('touchmove',canvas._tmove);canvas.removeEventListener('touchend',canvas._tstop);
   canvas._mstart=start;canvas._mmove=move;canvas._mstop=stop;
@@ -1557,11 +1557,11 @@ function togglePanel(prefix,i){var el=document.getElementById(prefix+'_'+i);if(!
 function empty(t,s){return'<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">'+t+'</div><div class="empty-sub">'+s+'</div></div>';}
 function fmt(v){return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function dtStr(s){if(!s)return'—';try{return new Date(s).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return s;}}
-function toast(t,m){var el=document.getElementById('toast');document.getElementById('toastT').textContent=t;document.getElementById('toastM').textContent=m;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},4000);}
-function load(v){document.getElementById('loadingOverlay').classList[v?'add':'remove']('show');}
+function toast(t,m){var el=document.getElementById('toast');(document.getElementById('toastT')||{}).textContent=t;(document.getElementById('toastM')||{}).textContent=m;el.classList.add('show');setTimeout(function(){el.classList.remove('show');},4000);}
+function load(v){(document.getElementById('loadingOverlay')||{}).classList[v?'add':'remove']('show');}
 function fecharModal(id){document.getElementById(id).classList.remove('show');}
-function abrirModal(html){document.getElementById('modalGenericoBox').innerHTML=html;document.getElementById('modalGenerico').classList.add('show');}
-function abrirModalLargo(html){document.getElementById('modalLargoBox').innerHTML=html;document.getElementById('modalLargo').classList.add('show');}
+function abrirModal(html){(document.getElementById('modalGenericoBox')||{}).innerHTML=html;(document.getElementById('modalGenerico')||{}).classList.add('show');}
+function abrirModalLargo(html){(document.getElementById('modalLargoBox')||{}).innerHTML=html;(document.getElementById('modalLargo')||{}).classList.add('show');}
 function enc(s){return encodeURIComponent(s);}
 
 // ─────────────────────────────────────────────────────────────
