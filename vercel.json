@@ -1,16 +1,6 @@
 {
-  "version": 2,
   "routes": [
-    {
-      "src": "/",
-      "dest": "/login.html"
-    },
-    {
-      "src": "/(.*)",
-      "headers": {
-        "Cache-Control": "no-cache, no-store, must-revalidate"
-      },
-      "dest": "/$1"
-    }
+    { "src": "/", "dest": "/login.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
