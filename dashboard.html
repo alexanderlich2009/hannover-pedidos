@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Grupo Hannover</title>
-<meta name="description" content="Dashboard operacional — Grupo Hannover">
-<meta name="robots" content="noindex,nofollow">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%224%22 fill=%22%238B1A2B%22/%3E%3Ctext y=%2224%22 x=%226%22 font-size=%2222%22 fill=%22%23C9A96E%22%3EH%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -187,17 +184,13 @@ tr:hover td{background:rgba(139,26,43,0.015)}
 var SB_URL='https://qijwlgophinmscgtdpmb.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpandsZ29waGlubXNjZ3RkcG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTE2NTMsImV4cCI6MjA5MTE2NzY1M30.HKrppltvS12zFglwtdNsbtBtUsui4jvBXvBJs6o82WM';
 function sb(path,method,body){return fetch(SB_URL+'/rest/v1'+path,{method:method||'GET',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:body?JSON.stringify(body):undefined});}
-function sbGet(p){return sb(p).then(function(r){return r.ok?r.json():[];}).catch(function(e){console.warn('Falha:',e);return[];});}
+function sbGet(p){return sb(p).then(function(r){return r.ok?r.json():[];}).catch(function(){return[];});}
 function sbPost(p,b){return sb(p,'POST',b);}
 function sbPatch(p,b){return sb(p,'PATCH',b);}
 function sbDelete(p){return sb(p,'DELETE');}
 
-var USER=JSON.parse(sessionStorage.getItem('han_user')||localStorage.getItem('han_user')||'null');
-if(USER&&!sessionStorage.getItem('han_user')){sessionStorage.setItem('han_user',JSON.stringify(USER));}
-if(!USER||!USER.acesso||USER.acesso.indexOf('dashboard')<0){
-  sessionStorage.clear();localStorage.removeItem('han_user');
-  location.href='login.html?msg=sessao_expirada';
-}
+var USER=JSON.parse(sessionStorage.getItem('han_user')||'null');
+if(!USER||!USER.acesso||USER.acesso.indexOf('dashboard')<0){sessionStorage.clear();location.href='login.html';}
 var PERFIL=USER.perfil;
 var IS_ADMIN=PERFIL==='admin';
 var IS_OPERADOR=PERFIL==='operador';
@@ -206,7 +199,7 @@ document.getElementById('navUser').innerHTML='<div class="nav-user-name">'+USER.
 if(['admin','cd','cozinha','cd_cozinha'].indexOf(PERFIL)>=0)document.getElementById('btnPedidos').style.display='inline-block';
 
 function labelPerfil(p){return{'admin':'Administrador','comprador':'Comprador','cd':'CD Cadeia Seca','cozinha':'CD Cadeia Fria','cd_cozinha':'CD Geral','recebedor_fria':'Recebedor Fria','recebedor_seca':'Recebedor Seca','operador':'Gerente de Unidade'}[p]||p;}
-function logout(){sessionStorage.clear();localStorage.removeItem('han_user');location.href='login.html';}
+function logout(){sessionStorage.clear();location.href='login.html';}
 
 var UNIDADES=['Hannover Fondue Moema','Hannover Fondue Perdizes','Hannover Fondue Tatuapé','Hannover Tomahawk','Hamburgo & Fries'];
 var D={pedidos:[],solicitacoes:[],compras:[],romaneios:[],dailyRevenue:[],unitCosts:[],overheadEntries:[],npsScores:[],insumos:[],fornecedores:[],monthlyTargets:[],priceHistory:[],view:null,dreMonth:new Date().toISOString().slice(0,7),activeSolId:null,activeCompraId:null,activeRomaneioId:null,activePedidoId:null};
@@ -817,8 +810,6 @@ function detalhePedido(p){
   var rows=its.map(function(it){return'<tr><td style="color:var(--muted);font-size:11px">'+(it.codigo||'—')+'</td><td style="font-weight:600">'+it.produto+'</td><td>'+it.categoria+'</td><td style="text-align:center;font-weight:700">'+it.qty+'</td><td>'+it.unidade+'</td><td style="text-align:right">'+(it.valorTotal?'R$ '+fmt(it.valorTotal):'—')+'</td><td><span class="badge '+(it.destino==='matheus'?'b-fria':'b-seca')+'">'+(it.destino==='matheus'?'Fria':'Seca')+'</span></td></tr>';}).join('');
   var html='<div style="padding:16px">';
   if(p.obs)html+='<p style="font-size:12px;color:var(--muted);margin-bottom:10px"><b>Obs:</b> '+p.obs+'</p>';
-  var semDestino = its.filter(function(x){return x.destino!=='matheus'&&x.destino!=='miguel';});
-  if(semDestino.length) html += '<div class="alert alert-yellow" style="margin-bottom:10px">⚠️ '+semDestino.length+' item(s) sem cadeia definida: '+semDestino.map(function(x){return x.produto;}).join(', ')+'</div>';
   html+='<div style="overflow-x:auto"><table><thead><tr><th>Cód.</th><th>Produto</th><th>Categoria</th><th style="text-align:center">Qtd</th><th>Unid.</th><th style="text-align:right">Valor</th><th>Cadeia</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   if(p.status==='pendente'&&['admin','cd','cozinha','cd_cozinha'].indexOf(PERFIL)>=0){
     var hasFria=its.some(function(x){return x.destino==='matheus';}),hasSeca=its.some(function(x){return x.destino==='miguel';});
@@ -837,36 +828,8 @@ function detalhePedido(p){
 // ── DESPACHAR ──────────────────────────────────────────────────
 async function despachar(pedidoId,cadeia,e){
   if(e)e.stopPropagation();
-  // Modal elegante para nome do motorista
-  var motorista = await new Promise(function(resolve){
-    var html='<div class="modal-title">Despachar Pedido</div>'+
-      '<div class="modal-sub">Informe o nome do motorista ou entregador</div>'+
-      '<div class="form-field"><div class="form-label">Nome do Motorista</div>'+
-        '<input class="form-input" id="inputMotorista" placeholder="Ex: João Silva">'+
-      '</div>'+
-      '<div class="modal-footer">'+
-        '<button class="btn btn-ghost btn-sm" id="btnMotCancelar">Cancelar</button>'+
-        '<button class="btn btn-primary btn-sm" id="btnMotConfirmar">Despachar 🚚</button>'+
-      '</div>';
-    abrirModal(html);
-    setTimeout(function(){
-      var inp=document.getElementById('inputMotorista');
-      var btnC=document.getElementById('btnMotCancelar');
-      var btnOk=document.getElementById('btnMotConfirmar');
-      function confirmar(){
-        var v=(inp?inp.value:'').trim();
-        if(!v){toast('Atenção','Informe o nome do motorista.');return;}
-        fecharModal('modalG');resolve(v);
-      }
-      function cancelar(){fecharModal('modalG');resolve(null);}
-      if(inp){inp.focus();inp.addEventListener('keydown',function(ev){if(ev.key==='Enter')confirmar();});}
-      if(btnC)btnC.onclick=cancelar;
-      if(btnOk)btnOk.onclick=confirmar;
-    },100);
-  });
-  if(!motorista)return;
-  load(true);
-  var now=new Date().toISOString();
+  var motorista=prompt('Nome do motorista/entregador:');if(!motorista)return;
+  load(true);var now=new Date().toISOString();
   await sbPatch('/pedidos?pedido_id=eq.'+enc(pedidoId),{status:'despachado',driver_name:motorista,dispatched_at:now});
   var p=D.pedidos.find(function(x){return x.pedido_id===pedidoId;});if(p){p.status='despachado';p.driver_name=motorista;p.dispatched_at=now;}
   var its=(p?p.itens||[]:[]).filter(function(x){if(cadeia==='ambas')return true;return cadeia==='fria'?x.destino==='matheus':x.destino==='miguel';});
@@ -874,6 +837,80 @@ async function despachar(pedidoId,cadeia,e){
   if(r.ok){var d=await r.json();if(d&&d[0])D.romaneios.unshift(d[0]);}
   load(false);updateBadges();toast('Despachado ✓','Romaneio criado.');render(D.view);
 }
+
+// ── ROMANEIOS COM CONFERÊNCIA ──────────────────────────────────
+function tabelaRomaneios(){
+  var roms=D.romaneios;if(!roms.length)return empty('Nenhum romaneio','Criados ao despachar pedidos.');
+  var lim24=new Date(Date.now()-24*3600*1000).toISOString();
+  var rows=roms.map(function(r){
+    var atrasado=!r.signed_at&&r.created_at<lim24;
+    return'<tr>'+
+      '<td><div class="td-name">#'+(r.numero||'—')+'</div><div class="td-sub">'+dtStr(r.created_at)+'</div></td>'+
+      '<td>'+(r.unidade||'—')+'</td>'+
+      '<td><span class="badge '+(r.cadeia==='fria'?'b-fria':'b-seca')+'">'+r.cadeia+'</span></td>'+
+      '<td>'+(r.motorista||'—')+'</td>'+
+      '<td>'+(!r.signed_at?'<span class="badge b-pending">'+(atrasado?'⚠ Atrasado':'Pendente')+'</span>':'<span class="badge b-ok">✓ Assinado</span>')+'</td>'+
+      '<td style="display:flex;gap:6px;flex-wrap:wrap">'+
+        (!r.signed_at?'<button class="btn btn-primary btn-sm" onclick="abrirAssinatura(\''+r.id+'\',null,event)">✍ Conferir e Assinar</button>':'')+
+        '<button class="btn btn-ghost btn-sm" onclick="imprimirRomById(\''+r.id+'\')">🖨 PDF</button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+  return'<table><thead><tr><th>Romaneio</th><th>Unidade</th><th>Cadeia</th><th>Motorista</th><th>Status</th><th>Ações</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+// ── ASSINATURA COM CHECKLIST ───────────────────────────────────
+var _sigRomId=null,_sigPedId=null,_sigDraw=false;
+
+function abrirAssinatura(romId,pedId,e){
+  if(e)e.stopPropagation();
+  _sigRomId=romId;_sigPedId=pedId;
+  var r=romId?D.romaneios.find(function(x){return x.id===romId;}):null;
+  var p=pedId?D.pedidos.find(function(x){return x.pedido_id===pedId;}):null;
+  var info=r?'Romaneio #'+r.numero+' · '+r.unidade:'Pedido '+pedId;
+  document.getElementById('sigInfo').textContent='Confirme os itens recebidos e assine · '+info;
+  // Checklist de itens
+  var its=(r?r.itens:p?p.itens:[])||[];
+  var checkHtml='';
+  if(its.length){
+    checkHtml='<div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Confirme os itens recebidos:</div>';
+    its.forEach(function(it,i){
+      checkHtml+='<div class="check-item" id="chk_'+i+'">'+'<input type="checkbox" id="chkbox_'+i+'" onchange="checkItem('+i+',\''+it.produto.replace(/'/g,"\\'")+'\')">'+'<div style="flex:1"><div style="font-size:12px;font-weight:500">'+it.produto+'</div><div style="font-size:11px;color:var(--muted)">'+it.qty+' '+it.unidade+'</div></div>'+'<select style="font-size:10px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;background:var(--bg)" id="chkst_'+i+'" onchange="checkItem('+i+',\''+it.produto.replace(/'/g,"\\'")+'\')">'+'<option value="ok">✓ OK</option><option value="divergencia">⚠ Divergência</option><option value="faltou">✗ Não veio</option></select></div>';
+    });
+  }
+  document.getElementById('sigChecklist').innerHTML=checkHtml;
+  initCanvas();
+  document.getElementById('modalSig').classList.add('show');
+}
+
+function checkItem(i,produto){
+  var chk=document.getElementById('chkbox_'+i);
+  var st=(document.getElementById('chkst_'+i)||{}).value||'ok';
+  var row=document.getElementById('chk_'+i);
+  if(row){
+    row.classList.toggle('checked',chk&&chk.checked&&st==='ok');
+    row.classList.toggle('divergencia',st!=='ok');
+  }
+}
+
+function initCanvas(){
+  var canvas=document.getElementById('sigCanvas');canvas.className='sig-canvas';
+  var ctx=canvas.getContext('2d');
+  var rect=canvas.getBoundingClientRect();var dpr=window.devicePixelRatio||1;
+  canvas.width=(rect.width||400)*dpr;canvas.height=160*dpr;
+  canvas.style.width=(rect.width||400)+'px';canvas.style.height='160px';
+  ctx.scale(dpr,dpr);ctx.clearRect(0,0,rect.width||400,160);
+  ctx.strokeStyle='#2C1010';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  document.getElementById('sigStatus').textContent='Desenhe sua assinatura acima';
+  function pos(e){var r=canvas.getBoundingClientRect();var src=e.touches?e.touches[0]:e;return{x:src.clientX-r.left,y:src.clientY-r.top};}
+  function start(e){e.preventDefault();_sigDraw=true;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+  function move(e){e.preventDefault();if(!_sigDraw)return;var p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}
+  function stop(e){e.preventDefault();_sigDraw=false;canvas.className='sig-canvas done';document.getElementById('sigStatus').textContent='Assinatura capturada ✓';}
+  canvas.onmousedown=start;canvas.onmousemove=move;canvas.onmouseup=stop;canvas.onmouseleave=stop;
+  canvas.ontouchstart=start;canvas.ontouchmove=move;canvas.ontouchend=stop;
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',stop,{passive:false});
+}
+function sigLimpar(){initCanvas();}
 
 async function sigConfirmar(){
   var canvas=document.getElementById('sigCanvas');
@@ -960,13 +997,13 @@ function abrirPreencherCompra(solId){
   var PRAZOS=['À vista','7 dias','14 dias','21 dias','28 dias','30 dias','45 dias','60 dias'];
   var amanha=new Date();amanha.setDate(amanha.getDate()+1);var dataMin=amanha.toISOString().split('T')[0];
   var rows=itens.map(function(it,i){return'<div style="border:1px solid var(--border);border-radius:3px;padding:12px;margin-bottom:10px"><div style="font-weight:600;font-size:13px;margin-bottom:10px">'+it.nome+' · '+(it.qtd||'—')+' '+(it.unid||'')+'</div><div class="form-row"><div class="form-field"><div class="form-label">Fornecedor *</div><input class="form-input" id="pc_f'+i+'" placeholder="Nome" value="'+(it.fornecedorRef||'')+'"></div><div class="form-field"><div class="form-label">Valor Total R$</div><input class="form-input" type="number" id="pc_v'+i+'" placeholder="0,00"></div></div><div class="form-row"><div class="form-field"><div class="form-label">Prazo Pag.</div><select class="form-select" id="pc_p'+i+'">'+PRAZOS.map(function(p){return'<option>'+p+'</option>';}).join('')+'</select></div><div class="form-field"><div class="form-label">Entrega Prevista</div><input class="form-input" type="date" id="pc_d'+i+'" value="'+dataMin+'"></div></div></div>';}).join('');
-  var html='<div class="modal-title">Preencher Compra</div><div class="modal-sub">'+solId+' · '+itens.length+' item(s) · '+sol.solicitante+'</div><div style="max-height:55vh;overflow-y:auto">'+rows+'</div><div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="fecharModal(\'modalL\')">Cancelar</button><button class="btn btn-primary btn-sm" onclick="submitCompra('+itens.length+')">Enviar para Aprovação →</button></div>';
+  var html='<div class="modal-title">Preencher Compra</div><div class="modal-sub">'+solId+' · '+itens.length+' item(s) · '+sol.solicitante+'</div><div style="max-height:55vh;overflow-y:auto">'+rows+'</div><div class="form-field" style="padding:0 4px;margin-top:12px"><div class="form-label">Observação geral</div><textarea class="form-input" id="pc_obs" rows="2" placeholder="Ex: entrega parcial, substituição de item, urgência..." style="resize:vertical;min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-ghost btn-sm" onclick="fecharModal(\'modalL\')">Cancelar</button><button class="btn btn-primary btn-sm" onclick="submitCompra('+itens.length+')">Enviar para Aprovação →</button></div>';
   abrirModalL(html);
 }
 
 async function submitCompra(count){
   var solId=D.activeSolId;var sol=D.solicitacoes.find(function(s){return s.sol_id===solId;});var itens=sol?sol.itens||[]:[];var criados=[];
-  for(var i=0;i<count;i++){var forn=(document.getElementById('pc_f'+i)||{}).value||'';var val=+(document.getElementById('pc_v'+i)||{}).value||0;if(!forn||!val)continue;var it=itens[i]||{};var cid='CMP-'+Date.now()+'-'+i;var body={compra_id:cid,sol_id:solId,solicitante:sol?sol.solicitante:'',executor:USER.login,produto:it.nome||'',fornecedor:forn,qtd_confirmada:it.qtd||'',valor:val,prazo_pagamento:(document.getElementById('pc_p'+i)||{}).value||'',prazo_entrega:(document.getElementById('pc_d'+i)||{}).value||'',status:'aguardando_aprovacao',timestamp:new Date().toISOString()};load(true);var r=await sbPost('/compras',body);if(r.ok){var d=await r.json();if(d&&d[0]){D.compras.unshift(d[0]);criados.push(d[0]);}}else{D.compras.unshift(body);criados.push(body);}}
+  for(var i=0;i<count;i++){var forn=(document.getElementById('pc_f'+i)||{}).value||'';var val=+(document.getElementById('pc_v'+i)||{}).value||0;if(!forn||!val)continue;var it=itens[i]||{};var cid='CMP-'+Date.now()+'-'+i;var obs=(document.getElementById('pc_obs')||{}).value||'';var body={compra_id:cid,sol_id:solId,solicitante:sol?sol.solicitante:'',executor:USER.login,produto:it.nome||'',fornecedor:forn,qtd_confirmada:it.qtd||'',valor:val,prazo_pagamento:(document.getElementById('pc_p'+i)||{}).value||'',prazo_entrega:(document.getElementById('pc_d'+i)||{}).value||'',obs:obs,status:'aguardando_aprovacao',timestamp:new Date().toISOString()};load(true);var r=await sbPost('/compras',body);if(r.ok){var d=await r.json();if(d&&d[0]){D.compras.unshift(d[0]);criados.push(d[0]);}}else{D.compras.unshift(body);criados.push(body);}}
   if(sol&&criados.length){sol.status='em_andamento';await sbPatch('/solicitacoes?sol_id=eq.'+enc(solId),{status:'em_andamento',updated_at:new Date().toISOString()});}
   load(false);fecharModal('modalL');
   if(criados.length)toast('Compra(s) criada(s) ✓',criados.length+' enviada(s) para aprovação.');
@@ -1074,12 +1111,7 @@ function vConsumo(m){
 
   if(!covers){
     m.innerHTML=pgHdr('Consumo por Pessoa','Quanto cada unidade consome por cliente atendido')+filtros+
-      '<div class="alert alert-yellow" style="line-height:1.8">'+
-        '⚠️ <b>Sem covers lançados para '+periodoSel+'.</b><br>'+
-        'Acesse o <b>Input Diário</b> e lance o número de pessoas atendidas em cada dia do período.'+
-        '<br><br><button class="btn btn-primary btn-sm" id="btnGoInput">Ir para Input Diário →</button>'+
-      '</div>';
-    setTimeout(function(){var b=document.getElementById('btnGoInput');if(b)b.onclick=function(){go('input');};},50);
+      '<div class="alert alert-yellow">Sem covers lançados para este período. Lance os dados no <b>Input Diário</b> para ver o consumo por pessoa.</div>';
     return;
   }
 
@@ -1151,9 +1183,7 @@ async function loadData(){
   }catch(e){
     D.pedidos=[];D.solicitacoes=[];D.compras=[];D.romaneios=[];D.dailyRevenue=[];D.npsScores=[];
     D.unitCosts=[];D.overheadEntries=[];D.insumos=[];D.fornecedores=[];D.monthlyTargets=[];
-    load(false);updateBadges();
-    var em=document.getElementById('main');
-    if(em)em.innerHTML='<div style="padding:60px;text-align:center"><div style="font-size:40px;margin-bottom:12px">⚠️</div><div style="font-family:Cormorant Garamond,serif;font-size:22px;margin-bottom:8px">Erro de conexão</div><div style="font-size:12px;color:var(--muted);margin-bottom:20px">Verifique sua conexão e tente novamente.</div><button class="btn btn-primary" onclick="loadData()">🔄 Tentar novamente</button></div>';
+    load(false);updateBadges();render(D.view);
   }
 }
 
@@ -1179,9 +1209,7 @@ var firstView={admin:'dashboard',cd:'pedidos-cd',cozinha:'pedidos-cd',cd_cozinha
 D.view=firstView;
 var initEl=document.getElementById('nav_'+firstView);if(initEl)initEl.classList.add('active');
 loadData();
-window.addEventListener('unhandledrejection',function(e){console.error('Erro:',e.reason);load(false);toast('Erro inesperado','Recarregue a página.');});
-setInterval(function(){if(!document.hidden)loadData();},3*60*1000);
-document.addEventListener('visibilitychange',function(){if(!document.hidden)loadData();});
+setInterval(loadData,3*60*1000);
 </script>
 </body>
 </html>
