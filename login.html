@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grupo Hannover — Acesso</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="description" content="Sistema operacional interno — Grupo Hannover">
 <meta name="robots" content="noindex,nofollow">
-
+<title>Grupo Hannover — Acesso</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--cherry:#8B1A2B;--maroon:#5C0E1A;--cream:#F7F3EE;--gold:#C9A96E;--dark:#1A0A0E}
-body{min-height:100vh;background:var(--dark);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;position:relative;overflow:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 50%,rgba(139,26,43,0.15) 0%,transparent 70%);pointer-events:none}
-.card{position:relative;z-index:1;background:rgba(26,10,14,0.85);border:1px solid rgba(201,169,110,0.2);border-radius:2px;padding:56px 48px 48px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(201,169,110,0.1);}
-
-.logo-area{text-align:center;margin-bottom:40px}
-.logo-mark{width:56px;height:56px;margin:0 auto 16px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center}
-.logo-mark svg{width:28px;height:28px;fill:var(--gold)}
-.brand-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--cream);letter-spacing:0.15em;text-transform:uppercase}
-.brand-sub{font-size:10px;font-weight:300;color:rgba(247,243,238,0.4);letter-spacing:0.3em;text-transform:uppercase;margin-top:4px}
-.divider{width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:20px auto 0}
-.field{margin-bottom:20px}
-label{display:block;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(247,243,238,0.5);margin-bottom:8px}
-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(201,169,110,0.2);border-radius:2px;padding:14px 16px;color:var(--cream);font-family:'Montserrat',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
-input:focus{border-color:rgba(201,169,110,0.5);background:rgba(255,255,255,0.06)}
-input::placeholder{color:rgba(247,243,238,0.2)}
-.btn{width:100%;background:var(--cherry);border:none;border-radius:2px;padding:16px;color:var(--cream);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:background 0.2s}
-.btn:hover{background:var(--maroon)}
+:root{--cherry:#8B1A2B;--gold:#C9A96E;--dark:#1A0A0E;--cream:#F7F3EE}
+html,body{height:100%;width:100%}
+body{background:#1A0A0E;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;min-height:100vh}
+.card{background:#2A1218;border:1px solid rgba(201,169,110,0.2);border-radius:4px;padding:48px 36px 40px;width:100%;max-width:400px;margin:20px}
+.logo-area{text-align:center;margin-bottom:32px}
+.logo-mark{width:48px;height:48px;margin:0 auto 12px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:24px;height:24px;fill:var(--gold)}
+.brand-name{font-family:'Cormorant Garamond',serif;color:var(--cream);font-size:20px;letter-spacing:0.1em;margin-bottom:4px}
+.brand-sub{font-size:10px;color:rgba(247,243,238,0.4);letter-spacing:0.2em;text-transform:uppercase}
+.divider{height:1px;background:rgba(201,169,110,0.15);margin:24px 0}
+.field{margin-bottom:16px}
+label{display:block;font-size:11px;color:rgba(247,243,238,0.5);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(201,169,110,0.15);border-radius:2px;padding:12px 14px;color:var(--cream);font-size:15px;font-family:'Montserrat',sans-serif;outline:none;-webkit-appearance:none}
+input:focus{border-color:rgba(201,169,110,0.4)}
+.pass-wrap{position:relative}
+.pass-wrap input{padding-right:44px}
+.toggle-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(247,243,238,0.35);font-size:16px;padding:0;line-height:1}
+.btn{width:100%;background:var(--cherry);border:none;border-radius:2px;padding:14px;color:var(--cream);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;margin-top:8px}
+.btn:active{background:#7A1525}
 .error-msg{display:none;background:rgba(139,26,43,0.2);border:1px solid rgba(139,26,43,0.4);border-radius:2px;padding:10px 14px;color:#E87070;font-size:12px;margin-top:14px;text-align:center}
-.footer-note{text-align:center;margin-top:32px;font-size:10px;color:rgba(247,243,238,0.2);letter-spacing:0.1em}
-@media(max-width:480px){.card{padding:40px 28px 36px}}
+.footer-note{text-align:center;font-size:10px;color:rgba(247,243,238,0.2);margin-top:24px;letter-spacing:0.05em}
 </style>
 </head>
 <body>
@@ -41,15 +40,18 @@ input::placeholder{color:rgba(247,243,238,0.2)}
     </div>
     <div class="brand-name">Grupo Hannover</div>
     <div class="brand-sub">Sistema Operacional</div>
-    <div class="divider"></div>
   </div>
+  <div class="divider"></div>
   <div class="field">
     <label>Usuário</label>
     <input type="text" id="username" placeholder="seu.usuario" autocomplete="username" autocapitalize="none">
   </div>
   <div class="field">
     <label>Senha</label>
-    <div style="position:relative"><input type="password" id="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:44px"><button type="button" onclick="toggleSenha()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(247,243,238,0.4);font-size:16px;padding:0;line-height:1" id="btnToggleSenha">👁</button></div>
+    <div class="pass-wrap">
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      <button type="button" class="toggle-btn" id="btnToggleSenha" onclick="toggleSenha()">👁</button>
+    </div>
   </div>
   <button class="btn" onclick="doLogin()">Entrar</button>
   <div class="error-msg" id="errMsg">Usuário ou senha incorretos.</div>
@@ -57,53 +59,72 @@ input::placeholder{color:rgba(247,243,238,0.2)}
 </div>
 <script>
 var USERS = {
-  'guilherme.lich': { senha:'han@admin2024',  perfil:'admin',         unidade:'Todas',                   acesso:['pedidos','dashboard'] },
-  'alexandre':      { senha:'han@comp2024',   perfil:'comprador',     unidade:null,                      acesso:['dashboard','pedidos'] },
-  'rafael':         { senha:'han@comp2024',   perfil:'comprador',     unidade:null,                      acesso:['dashboard','pedidos'] },
-  'miguel':         { senha:'han@cd2024',     perfil:'cd',            unidade:'Centro de Distribuicao',  acesso:['dashboard','pedidos'] },
-  'mirna':          { senha:'han@moema2024',  perfil:'operador',      unidade:'Moema',                   acesso:['pedidos'] },
-  'eduarda':        { senha:'han@moema2024',  perfil:'operador',      unidade:'Moema',                   acesso:['pedidos'] },
-  'krislley':       { senha:'han@tomahawk24', perfil:'operador',      unidade:'Tomahawk',                acesso:['pedidos'] },
-  'yuri':           { senha:'han@hambur2024', perfil:'operador',      unidade:'Hamburgo & Fries',        acesso:['pedidos'] },
-  'matheus':        { senha:'han@cozinha24',  perfil:'cozinha',       unidade:'Cozinha Central',         acesso:['dashboard','pedidos'] },
-  'keke':           { senha:'han@perdiz2024', perfil:'operador',      unidade:'Perdizes',                acesso:['pedidos'] },
-  'tati':           { senha:'han@perdiz2024', perfil:'operador',      unidade:'Perdizes',                acesso:['pedidos'] },
-  'evelise':        { senha:'han@tatua2024',  perfil:'operador',      unidade:'Tatuape',                 acesso:['pedidos'] },
-  'guilherme.sub':  { senha:'han@tatua2024',  perfil:'operador',      unidade:'Tatuape',                 acesso:['pedidos'] },
-  'lucas':          { senha:'han@receb2024',  perfil:'recebedor_fria',unidade:'Cozinha Central',         acesso:['dashboard'] },
-  'marcelo':        { senha:'han@receb2024',  perfil:'recebedor_seca',unidade:'Cozinha Central',         acesso:['dashboard'] },
-  'alexandra':      { senha:'han@central2024',perfil:'cd_cozinha',   unidade:'Todas',                   acesso:['pedidos','dashboard'] }
+  'guilherme.lich': { senha:'han@admin2024',   perfil:'admin',          unidade:'Todas',                   acesso:['pedidos','dashboard'] },
+  'alexandre':      { senha:'han@comp2024',     perfil:'comprador',      unidade:null,                      acesso:['dashboard','pedidos'] },
+  'rafael':         { senha:'han@comp2024',     perfil:'comprador',      unidade:null,                      acesso:['dashboard','pedidos'] },
+  'miguel':         { senha:'han@cd2024',       perfil:'cd',             unidade:'Centro de Distribuicao',  acesso:['dashboard','pedidos'] },
+  'mirna':          { senha:'han@moema2024',    perfil:'operador',       unidade:'Moema',                   acesso:['pedidos'] },
+  'eduarda':        { senha:'han@moema2024',    perfil:'operador',       unidade:'Moema',                   acesso:['pedidos'] },
+  'krislley':       { senha:'han@tomahawk24',   perfil:'operador',       unidade:'Tomahawk',                acesso:['pedidos'] },
+  'yuri':           { senha:'han@hambur2024',   perfil:'operador',       unidade:'Hamburgo & Fries',        acesso:['pedidos'] },
+  'matheus':        { senha:'han@cozinha24',    perfil:'cozinha',        unidade:'Cozinha Central',         acesso:['pedidos'] },
+  'keke':           { senha:'han@perdiz2024',   perfil:'operador',       unidade:'Perdizes',                acesso:['pedidos'] },
+  'tati':           { senha:'han@perdiz2024',   perfil:'operador',       unidade:'Perdizes',                acesso:['pedidos'] },
+  'evelise':        { senha:'han@tatua2024',    perfil:'operador',       unidade:'Tatuapé',                 acesso:['pedidos'] },
+  'guilherme.sub':  { senha:'han@tatua2024',    perfil:'operador',       unidade:'Tatuapé',                 acesso:['pedidos'] },
+  'lucas':          { senha:'han@receb2024',    perfil:'recebedor_fria', unidade:'Cozinha Central',         acesso:['pedidos'] },
+  'marcelo':        { senha:'han@receb2024',    perfil:'recebedor_seca', unidade:'Cozinha Central',         acesso:['pedidos'] },
+  'alexandra':      { senha:'han@central2024',  perfil:'cd_cozinha',     unidade:'Todas',                   acesso:['pedidos','dashboard'] }
 };
 
 function toggleSenha(){
   var inp=document.getElementById('password');
   var btn=document.getElementById('btnToggleSenha');
   if(inp.type==='password'){inp.type='text';btn.style.color='rgba(247,243,238,0.7)';}
-  else{inp.type='password';btn.style.color='rgba(247,243,238,0.4)';}
-}
-function doLogin() {
-  var u = document.getElementById('username').value.trim().toLowerCase();
-  var p = document.getElementById('password').value;
-  var err = document.getElementById('errMsg');
-  var user = USERS[u];
-  if (!user || user.senha !== p) { err.style.display='block'; return; }
-  err.style.display = 'none';
-  var userData = JSON.stringify({ login:u, perfil:user.perfil, unidade:user.unidade, acesso:user.acesso });
-  sessionStorage.setItem('han_user', userData);
-  localStorage.setItem('han_user', userData); // Persiste sessão entre abas
-  window.location.href = user.perfil==='operador' ? 'pedidos.html' : 'dashboard.html';
+  else{inp.type='password';btn.style.color='rgba(247,243,238,0.35)';}
 }
 
-document.addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
-
-// Auto-redirect se já logado
-(function(){
-  var s = sessionStorage.getItem('han_user');
-  if (s) {
-    var u = JSON.parse(s);
-    window.location.href = u.perfil==='operador' ? 'pedidos.html' : 'dashboard.html';
+function doLogin(){
+  var u=(document.getElementById('username').value||'').trim().toLowerCase();
+  var s=(document.getElementById('password').value||'').trim();
+  var user=USERS[u];
+  var errEl=document.getElementById('errMsg');
+  if(!user||user.senha!==s){
+    errEl.style.display='block';
+    return;
   }
-})();
+  errEl.style.display='none';
+  var userData=JSON.stringify({login:u,perfil:user.perfil,unidade:user.unidade,acesso:user.acesso});
+  sessionStorage.setItem('han_user',userData);
+  localStorage.setItem('han_user',userData);
+  if(user.acesso.indexOf('pedidos')>=0&&user.perfil!=='admin'&&user.perfil!=='comprador'&&user.acesso.indexOf('dashboard')<0){
+    window.location.href='pedidos.html';
+  } else if(user.acesso.indexOf('dashboard')>=0){
+    window.location.href='dashboard.html';
+  } else {
+    window.location.href='pedidos.html';
+  }
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+
+var stored=sessionStorage.getItem('han_user')||localStorage.getItem('han_user');
+if(stored){
+  try{
+    var u=JSON.parse(stored);
+    if(u&&u.acesso){
+      if(u.acesso.indexOf('dashboard')>=0) window.location.href='dashboard.html';
+      else window.location.href='pedidos.html';
+    }
+  }catch(e){}
+}
+
+var msg=new URLSearchParams(window.location.search).get('msg');
+if(msg==='sessao_expirada'){
+  var el=document.getElementById('errMsg');
+  el.textContent='Sessão expirada. Faça login novamente.';
+  el.style.display='block';
+}
 </script>
 </body>
 </html>
