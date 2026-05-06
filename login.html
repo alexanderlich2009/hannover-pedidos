@@ -2,129 +2,84 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="description" content="Sistema operacional interno — Grupo Hannover">
-<meta name="robots" content="noindex,nofollow">
-<title>Grupo Hannover — Acesso</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grupo Hannover</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--cherry:#8B1A2B;--gold:#C9A96E;--dark:#1A0A0E;--cream:#F7F3EE}
-html,body{height:100%;width:100%}
-body{background:#1A0A0E;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;min-height:100vh}
-.card{background:#2A1218;border:1px solid rgba(201,169,110,0.2);border-radius:4px;padding:48px 36px 40px;width:100%;max-width:400px;margin:20px}
-.logo-area{text-align:center;margin-bottom:32px}
-.logo-mark{width:48px;height:48px;margin:0 auto 12px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center}
-.logo-mark svg{width:24px;height:24px;fill:var(--gold)}
-.brand-name{font-family:'Cormorant Garamond',serif;color:var(--cream);font-size:20px;letter-spacing:0.1em;margin-bottom:4px}
-.brand-sub{font-size:10px;color:rgba(247,243,238,0.4);letter-spacing:0.2em;text-transform:uppercase}
-.divider{height:1px;background:rgba(201,169,110,0.15);margin:24px 0}
-.field{margin-bottom:16px}
-label{display:block;font-size:11px;color:rgba(247,243,238,0.5);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(201,169,110,0.15);border-radius:2px;padding:12px 14px;color:var(--cream);font-size:15px;font-family:'Montserrat',sans-serif;outline:none;-webkit-appearance:none}
-input:focus{border-color:rgba(201,169,110,0.4)}
-.pass-wrap{position:relative}
-.pass-wrap input{padding-right:44px}
-.toggle-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(247,243,238,0.35);font-size:16px;padding:0;line-height:1}
-.btn{width:100%;background:var(--cherry);border:none;border-radius:2px;padding:14px;color:var(--cream);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;margin-top:8px}
-.btn:active{background:#7A1525}
-.error-msg{display:none;background:rgba(139,26,43,0.2);border:1px solid rgba(139,26,43,0.4);border-radius:2px;padding:10px 14px;color:#E87070;font-size:12px;margin-top:14px;text-align:center}
-.footer-note{text-align:center;font-size:10px;color:rgba(247,243,238,0.2);margin-top:24px;letter-spacing:0.05em}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A0A0E;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif}
+.box{background:#2A1218;border:1px solid #4A2A30;border-radius:6px;padding:40px 32px;width:100%;max-width:380px;margin:16px}
+h1{color:#C9A96E;font-size:20px;text-align:center;margin-bottom:4px;letter-spacing:2px}
+p{color:#666;font-size:11px;text-align:center;margin-bottom:28px;letter-spacing:1px}
+label{display:block;color:#888;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+input{width:100%;background:#1A0A0E;border:1px solid #3A2020;border-radius:3px;padding:12px;color:#F7F3EE;font-size:15px;outline:none;margin-bottom:16px}
+input:focus{border-color:#C9A96E}
+.pass{position:relative}
+.pass input{padding-right:44px}
+.eye{position:absolute;right:12px;top:12px;background:none;border:none;color:#555;cursor:pointer;font-size:16px}
+button.btn{width:100%;background:#8B1A2B;border:none;border-radius:3px;padding:13px;color:#F7F3EE;font-size:13px;font-weight:bold;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
+button.btn:active{background:#6A1020}
+.err{display:none;color:#E87070;font-size:12px;text-align:center;margin-top:12px}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo-area">
-    <div class="logo-mark">
-      <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7L12 19.82 4 15.5v-7L12 4.18z"/></svg>
-    </div>
-    <div class="brand-name">Grupo Hannover</div>
-    <div class="brand-sub">Sistema Operacional</div>
+<div class="box">
+  <h1>HANNOVER</h1>
+  <p>SISTEMA OPERACIONAL</p>
+  <label>Usuário</label>
+  <input type="text" id="u" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+  <label>Senha</label>
+  <div class="pass">
+    <input type="password" id="p" autocomplete="current-password">
+    <button class="eye" type="button" onclick="toggleSenha()">👁</button>
   </div>
-  <div class="divider"></div>
-  <div class="field">
-    <label>Usuário</label>
-    <input type="text" id="username" placeholder="seu.usuario" autocomplete="username" autocapitalize="none">
-  </div>
-  <div class="field">
-    <label>Senha</label>
-    <div class="pass-wrap">
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-      <button type="button" class="toggle-btn" id="btnToggleSenha" onclick="toggleSenha()">👁</button>
-    </div>
-  </div>
-  <button class="btn" onclick="doLogin()">Entrar</button>
-  <div class="error-msg" id="errMsg">Usuário ou senha incorretos.</div>
-  <div class="footer-note">Acesso restrito — Grupo Hannover © 2025</div>
+  <button class="btn" onclick="login()">Entrar</button>
+  <div class="err" id="err">Usuário ou senha incorretos.</div>
 </div>
 <script>
-var USERS = {
-  'guilherme.lich': { senha:'han@admin2024',   perfil:'admin',          unidade:'Todas',                   acesso:['pedidos','dashboard'] },
-  'alexandre':      { senha:'han@comp2024',     perfil:'comprador',      unidade:null,                      acesso:['dashboard','pedidos'] },
-  'rafael':         { senha:'han@comp2024',     perfil:'comprador',      unidade:null,                      acesso:['dashboard','pedidos'] },
-  'miguel':         { senha:'han@cd2024',       perfil:'cd',             unidade:'Centro de Distribuicao',  acesso:['dashboard','pedidos'] },
-  'mirna':          { senha:'han@moema2024',    perfil:'operador',       unidade:'Moema',                   acesso:['pedidos'] },
-  'eduarda':        { senha:'han@moema2024',    perfil:'operador',       unidade:'Moema',                   acesso:['pedidos'] },
-  'krislley':       { senha:'han@tomahawk24',   perfil:'operador',       unidade:'Tomahawk',                acesso:['pedidos'] },
-  'yuri':           { senha:'han@hambur2024',   perfil:'operador',       unidade:'Hamburgo & Fries',        acesso:['pedidos'] },
-  'matheus':        { senha:'han@cozinha24',    perfil:'cozinha',        unidade:'Cozinha Central',         acesso:['pedidos'] },
-  'keke':           { senha:'han@perdiz2024',   perfil:'operador',       unidade:'Perdizes',                acesso:['pedidos'] },
-  'tati':           { senha:'han@perdiz2024',   perfil:'operador',       unidade:'Perdizes',                acesso:['pedidos'] },
-  'evelise':        { senha:'han@tatua2024',    perfil:'operador',       unidade:'Tatuapé',                 acesso:['pedidos'] },
-  'guilherme.sub':  { senha:'han@tatua2024',    perfil:'operador',       unidade:'Tatuapé',                 acesso:['pedidos'] },
-  'lucas':          { senha:'han@receb2024',    perfil:'recebedor_fria', unidade:'Cozinha Central',         acesso:['pedidos'] },
-  'marcelo':        { senha:'han@receb2024',    perfil:'recebedor_seca', unidade:'Cozinha Central',         acesso:['pedidos'] },
-  'alexandra':      { senha:'han@central2024',  perfil:'cd_cozinha',     unidade:'Todas',                   acesso:['pedidos','dashboard'] }
+var U={
+  'guilherme.lich':{s:'han@admin2024',a:['pedidos','dashboard']},
+  'alexandre':{s:'han@comp2024',a:['dashboard','pedidos']},
+  'rafael':{s:'han@comp2024',a:['dashboard','pedidos']},
+  'miguel':{s:'han@cd2024',u:'Centro de Distribuicao',a:['dashboard','pedidos']},
+  'mirna':{s:'han@moema2024',u:'Moema',a:['pedidos']},
+  'eduarda':{s:'han@moema2024',u:'Moema',a:['pedidos']},
+  'krislley':{s:'han@tomahawk24',u:'Tomahawk',a:['pedidos']},
+  'yuri':{s:'han@hambur2024',u:'Hamburgo & Fries',a:['pedidos']},
+  'matheus':{s:'han@cozinha24',u:'Cozinha Central',a:['pedidos']},
+  'keke':{s:'han@perdiz2024',u:'Perdizes',a:['pedidos']},
+  'tati':{s:'han@perdiz2024',u:'Perdizes',a:['pedidos']},
+  'evelise':{s:'han@tatua2024',u:'Tatuapé',a:['pedidos']},
+  'guilherme.sub':{s:'han@tatua2024',u:'Tatuapé',a:['pedidos']},
+  'lucas':{s:'han@receb2024',u:'Cozinha Central',a:['pedidos']},
+  'marcelo':{s:'han@receb2024',u:'Cozinha Central',a:['pedidos']},
+  'alexandra':{s:'han@central2024',u:'Todas',a:['pedidos','dashboard']}
 };
 
 function toggleSenha(){
-  var inp=document.getElementById('password');
-  var btn=document.getElementById('btnToggleSenha');
-  if(inp.type==='password'){inp.type='text';btn.style.color='rgba(247,243,238,0.7)';}
-  else{inp.type='password';btn.style.color='rgba(247,243,238,0.35)';}
+  var i=document.getElementById('p');
+  i.type=i.type==='password'?'text':'password';
 }
 
-function doLogin(){
-  var u=(document.getElementById('username').value||'').trim().toLowerCase();
-  var s=(document.getElementById('password').value||'').trim();
-  var user=USERS[u];
-  var errEl=document.getElementById('errMsg');
-  if(!user||user.senha!==s){
-    errEl.style.display='block';
+function login(){
+  var u=document.getElementById('u').value.trim().toLowerCase();
+  var p=document.getElementById('p').value;
+  var user=U[u];
+  if(!user||user.s!==p){
+    document.getElementById('err').style.display='block';
     return;
   }
-  errEl.style.display='none';
-  var userData=JSON.stringify({login:u,perfil:user.perfil,unidade:user.unidade,acesso:user.acesso});
-  sessionStorage.setItem('han_user',userData);
-  localStorage.setItem('han_user',userData);
-  if(user.acesso.indexOf('pedidos')>=0&&user.perfil!=='admin'&&user.perfil!=='comprador'&&user.acesso.indexOf('dashboard')<0){
-    window.location.href='pedidos.html';
-  } else if(user.acesso.indexOf('dashboard')>=0){
+  document.getElementById('err').style.display='none';
+  var data=JSON.stringify({login:u,perfil:u==='guilherme.lich'?'admin':u==='alexandre'||u==='rafael'?'comprador':u==='miguel'?'cd':u==='matheus'?'cozinha':u==='alexandra'?'cd_cozinha':u==='lucas'?'recebedor_fria':u==='marcelo'?'recebedor_seca':'operador',unidade:user.u||null,acesso:user.a});
+  sessionStorage.setItem('han_user',data);
+  localStorage.setItem('han_user',data);
+  if(user.a.indexOf('dashboard')>=0&&(u==='guilherme.lich'||u==='alexandre'||u==='rafael'||u==='alexandra')){
     window.location.href='dashboard.html';
   } else {
     window.location.href='pedidos.html';
   }
 }
 
-document.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-
-var stored=sessionStorage.getItem('han_user')||localStorage.getItem('han_user');
-if(stored){
-  try{
-    var u=JSON.parse(stored);
-    if(u&&u.acesso){
-      if(u.acesso.indexOf('dashboard')>=0) window.location.href='dashboard.html';
-      else window.location.href='pedidos.html';
-    }
-  }catch(e){}
-}
-
-var msg=new URLSearchParams(window.location.search).get('msg');
-if(msg==='sessao_expirada'){
-  var el=document.getElementById('errMsg');
-  el.textContent='Sessão expirada. Faça login novamente.';
-  el.style.display='block';
-}
+document.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
 </script>
 </body>
 </html>
