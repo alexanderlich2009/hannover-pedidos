@@ -1003,13 +1003,15 @@ function abrirPreencherCompra(solId){
 
 function calcTotal(i){
   var u=parseFloat((document.getElementById('pc_u'+i)||{}).value)||0;
-  var q=parseFloat((document.getElementById('pc_q'+i)||{}).value)||0;
+  var qEl=document.getElementById('pc_q'+i)||{};
+  var q=parseFloat(qEl.value)||parseFloat(qEl.placeholder)||0;
   var vEl=document.getElementById('pc_v'+i);
   if(vEl&&u>0&&q>0){vEl.value=(u*q).toFixed(2);}
 }
 function calcUnit(i){
   var v=parseFloat((document.getElementById('pc_v'+i)||{}).value)||0;
-  var q=parseFloat((document.getElementById('pc_q'+i)||{}).value)||0;
+  var qEl=document.getElementById('pc_q'+i)||{};
+  var q=parseFloat(qEl.value)||parseFloat(qEl.placeholder)||0;
   var uEl=document.getElementById('pc_u'+i);
   if(uEl&&v>0&&q>0){uEl.value=(v/q).toFixed(4);}
 }
