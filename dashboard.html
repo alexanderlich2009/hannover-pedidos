@@ -986,9 +986,22 @@ function tabelaSolicExec(sols){
   return'<div class="card"><table><thead><tr><th>Solicitação</th><th>Solicitante</th><th>Itens</th><th>Urgência</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 
+function toggleSolDetalhes(id){var el=document.getElementById('sol-det-'+id);if(el)el.style.display=el.style.display==='none'?'table-row':'none';}
 function tabelaSolici(sols){
   if(!sols.length)return'<div class="card">'+empty('Nenhuma solicitação','')+'</div>';
-  return'<div class="card"><table><thead><tr><th>Solicitação</th><th>Itens</th><th>Status</th><th>Obs</th></tr></thead><tbody>'+sols.map(function(s){return'<tr><td><div class="td-name">'+(s.sol_id||'—')+'</div><div class="td-sub">'+dtStr(s.timestamp)+'</div></td><td>'+((s.itens||[]).length)+' itens</td><td>'+badgeSt(s.status)+'</td><td style="font-size:11px;color:var(--muted)">'+(s.obs||'—')+'</td></tr>';}).join('')+'</tbody></table></div>';
+  var rows=sols.map(function(s){
+    var its=s.itens||[];
+    var det='<tr id="sol-det-'+s.sol_id+'" style="display:none"><td colspan="5" style="padding:0;background:var(--bg)"><div style="padding:8px 16px 8px 32px">'+its.map(function(it){return'<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><b>'+it.nome+'</b> · <span style="color:var(--muted)">'+it.qtd+' '+(it.unid||'')+'</span>'+(it.categoria?' · <span style="color:var(--muted)">'+it.categoria+'</span>':'')+'</div>';}).join('')+'</div></td></tr>';
+    var rowId='solrow-'+s.sol_id;
+    return'<tr id="'+rowId+'" data-sol="'+s.sol_id+'" style="cursor:pointer"><td><div class="td-name">'+(s.sol_id||'—')+'</div><div class="td-sub">'+dtStr(s.timestamp)+'</div></td><td>'+its.length+' itens</td><td>'+badgeSt(s.status)+'</td><td style="font-size:11px;color:var(--muted)">'+(s.obs||'—')+'</td><td style="color:var(--muted);font-size:11px">▼</td></tr>'+det;
+  }).join('');
+  var html='<div class="card"><table><thead><tr><th>Solicitação</th><th>Itens</th><th>Status</th><th>Obs</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  setTimeout(function(){
+    document.querySelectorAll('[data-sol]').forEach(function(row){
+      row.onclick=function(){toggleSolDetalhes(row.getAttribute('data-sol'));};
+    });
+  },50);
+  return html;
 }
 
 function abrirPreencherCompra(solId){
