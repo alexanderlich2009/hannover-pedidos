@@ -274,6 +274,52 @@ var USER = null;
 var isFondueUnit = false;
 var catalog = [];
 var cart = {};
+
+// ── RASCUNHOS ──────────────────────────────────────────────
+function salvarRascunho(){
+  try {
+    if(!USER)return;
+    var de=document.getElementById('metaDataEntrega');
+    var rascunho={cart:cart,turno:turno,numeroPessoas:numeroPessoas,dataEntrega:de?de.value:'',savedAt:new Date().toISOString()};
+    localStorage.setItem('rascunho_'+USER.login,JSON.stringify(rascunho));
+  }catch(e){}
+}
+function limparRascunho(){try{if(USER)localStorage.removeItem('rascunho_'+USER.login);}catch(e){}}
+function carregarRascunho(){
+  try{
+    if(!USER)return false;
+    var s=localStorage.getItem('rascunho_'+USER.login);
+    if(!s)return false;
+    var r=JSON.parse(s);
+    if(!r||!r.cart||!Object.keys(r.cart).length)return false;
+    var qtd=Object.values(r.cart).reduce(function(s,x){return s+(x||0);},0);
+    return qtd>0?r:false;
+  }catch(e){return false;}
+}
+function ofereceRascunho(){
+  var r=carregarRascunho();
+  if(!r)return;
+  var qtd=Object.values(r.cart).reduce(function(s,x){return s+(x||0);},0);
+  var salvou=r.savedAt?new Date(r.savedAt).toLocaleString('pt-BR'):'';
+  var el=document.getElementById('rascunhoInfo');
+  if(el)el.textContent=qtd+' item(s) salvos em '+salvou;
+  var modal=document.getElementById('modalRascunho');
+  if(modal)modal.style.display='flex';
+}
+function confirmarRascunho(){
+  var r=carregarRascunho();
+  if(!r)return;
+  cart=r.cart;
+  if(r.turno){turno=r.turno;var btn=document.getElementById('btn'+r.turno.charAt(0).toUpperCase()+r.turno.slice(1));if(btn){document.querySelectorAll('.turno-btn').forEach(function(b){b.className='turno-btn';});btn.className='turno-btn active';}}
+  if(r.numeroPessoas){numeroPessoas=r.numeroPessoas;var np=document.getElementById('numeroPessoas');if(np)np.value=numeroPessoas;}
+  if(r.dataEntrega){var de=document.getElementById('metaDataEntrega');if(de)de.value=r.dataEntrega;}
+  var modal=document.getElementById('modalRascunho');if(modal)modal.style.display='none';
+  updateCart();renderItems();
+}
+function descartarRascunho(){
+  limparRascunho();
+  var modal=document.getElementById('modalRascunho');if(modal)modal.style.display='none';
+}
 var estoques = {};
 var activeCategory = null;
 var turno = null;
@@ -318,7 +364,7 @@ async function logout() {
 // sbFetch usando token JWT do usuário
 async function sbFetch(path, opts) {
   try {
-  var { data: { session } } = await sb.auth.getSession().catch(function(){return{data:{session:null}};});
+  var session = null;
   var token = session ? session.access_token : SUPABASE_KEY;
   return fetch(SUPABASE_URL + '/rest/v1' + path, Object.assign({
     headers: {
@@ -351,41 +397,11 @@ function initPage() {
     lockCatalog(true);
   }
 
-  // Busca insumos do Supabase e adiciona ao catálogo
-  carregarInsumosDinamicos();
-}
-
-async function carregarInsumosDinamicos() {
-  try {
-    var res = await sbFetch('/insumos?ativo=eq.true&order=categoria.asc');
-    if (res.ok) {
-      var insumos = await res.json();
-      if (insumos && insumos.length > 0) {
-        // Converte insumos do Supabase para formato do catálogo
-        var novos = insumos.map(function(ins) {
-          return {
-            codigo: ins.codigo || ('INS' + ins.id),
-            categoria: ins.categoria || 'Outros',
-            produto: ins.nome || '',
-            unidade: ins.unidade_medida || 'un',
-            preco: ins.preco_unitario || null,
-            destino: ins.destino || null
-          };
-        });
-        // Adiciona ao catálogo sem duplicar (verifica por nome)
-        var nomesCatalogo = catalog.map(function(x) { return x.produto.toUpperCase(); });
-        var novosUnicos = novos.filter(function(n) {
-          return nomesCatalogo.indexOf(n.produto.toUpperCase()) < 0;
-        });
-        if (novosUnicos.length > 0) {
-          catalog = catalog.concat(novosUnicos);
-        }
-      }
-    }
-  } catch(e) { /* silencioso — usa só o catálogo estático */ }
+  catalog = getCatalog();
   buildSidebar();
   renderItems();
   updateCart();
+  setTimeout(ofereceRascunho, 500);
 }
 
 function lockCatalog(locked) {
@@ -433,8 +449,8 @@ function renderItems(){var search=document.getElementById('searchInput').value.t
 function getConsumoBadge(status){if(status==='ok')return{cls:'badge-ok',label:'\u25cf OK'};if(status==='excesso')return{cls:'badge-excesso',label:'\u26a0 Excesso'};if(status==='insuficiente')return{cls:'badge-insuf',label:'\u25cf Insuficiente'};return{cls:'badge-none',label:'\u2014'};}
 function updateConsumoIndicator(cod){var item=null;for(var i=0;i<catalog.length;i++){if(catalog[i].codigo===cod){item=catalog[i];break;}}if(!item)return;var cs=getConsumoStatus(item);if(!cs)return;var badge=document.getElementById('badge-'+cod);if(badge){var info=getConsumoBadge(cs.status);badge.className='consumo-badge '+info.cls;badge.textContent=info.label;}}
 
-function changeQty(cod,delta){var cur=cart[cod]||0;var newV=Math.max(0,cur+delta);if(newV===0)delete cart[cod];else cart[cod]=newV;var inp=document.getElementById('qty-'+cod);if(inp)inp.value=newV;var row=document.getElementById('row-'+cod);if(row)row.className='item-row'+(newV>0?' has-qty':'');updateConsumoIndicator(cod);updateCart();}
-function setQty(cod,val){var v=Math.max(0,parseInt(val)||0);if(v===0)delete cart[cod];else cart[cod]=v;var row=document.getElementById('row-'+cod);if(row)row.className='item-row'+(v>0?' has-qty':'');updateConsumoIndicator(cod);updateCart();}
+function changeQty(cod,delta){var cur=cart[cod]||0;var newV=Math.max(0,cur+delta);if(newV===0)delete cart[cod];else cart[cod]=newV;var inp=document.getElementById('qty-'+cod);if(inp)inp.value=newV;var row=document.getElementById('row-'+cod);if(row)row.className='item-row'+(newV>0?' has-qty':'');updateConsumoIndicator(cod);updateCart();salvarRascunho();}
+function setQty(cod,val){var v=Math.max(0,parseInt(val)||0);if(v===0)delete cart[cod];else cart[cod]=v;var row=document.getElementById('row-'+cod);if(row)row.className='item-row'+(v>0?' has-qty':'');updateConsumoIndicator(cod);updateCart();salvarRascunho();}
 
 function getCartItems(){return Object.keys(cart).map(function(cod){var item=null;for(var i=0;i<catalog.length;i++){if(catalog[i].codigo===cod){item=catalog[i];break;}}if(!item)return null;var qty=cart[cod];var valor=(item.preco&&qty)?item.preco*qty:null;var route=getRoute(item.categoria);var cs=getConsumoStatus(item);return{codigo:item.codigo,categoria:item.categoria,produto:item.produto,unidade:item.unidade,preco:item.preco||null,qty:qty,valor:valor,route:route,destino:route==='fria'?'matheus':'miguel',precoUnitario:item.preco||null,valorTotal:valor,estoqueAtual:estoques[item.codigo]||0,minimoRecomendado:cs?cs.rec:null,maximoRecomendado:cs?Math.ceil(cs.rec*1.2):null,statusEstoque:cs?cs.status:null};}).filter(Boolean);}
 
