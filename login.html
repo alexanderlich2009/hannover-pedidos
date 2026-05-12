@@ -150,10 +150,11 @@ function doLogin() {
   var user = USERS[u];
   if (!user || user.senha !== p) {
     err.style.display = 'block';
-    err.textContent = 'Usuário ou senha incorretos. [u:' + u + ' found:' + (!!user) + ' match:' + (user ? user.senha===p : 'n/a') + ']';
+    err.textContent = 'Usuário ou senha incorretos.';
     return;
   }
   err.style.display = 'none';
+  sessionStorage.clear();
   sessionStorage.setItem('han_user', JSON.stringify({ login: u, perfil: user.perfil, unidade: user.unidade, acesso: user.acesso }));
   if (user.perfil === 'operador') {
     window.location.href = 'pedidos.html';
